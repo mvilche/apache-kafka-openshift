@@ -23,17 +23,46 @@
   - apiVersion: v1
     data:
       zoo.cfg: |-
+        tickTime=2000
         dataDir=/opt/zookeeper-data
         clientPort=2181
         initLimit=5
         syncLimit=2
-        server.1=zk-0:2888:3888
-        server.2=zk-1:2888:3888
-        server.3=zk-2:2888:3888
-        tickTime=2000
+        server.1=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+        server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+        server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+      log4j.properties: |-
+        zookeeper.root.logger=INFO, CONSOLE
+        zookeeper.console.threshold=INFO
+        zookeeper.log.dir=.
+        zookeeper.log.file=zookeeper.log
+        zookeeper.log.threshold=INFO
+        zookeeper.log.maxfilesize=256MB
+        zookeeper.log.maxbackupindex=20
+        zookeeper.tracelog.dir=${zookeeper.log.dir}
+        zookeeper.tracelog.file=zookeeper_trace.log
+        log4j.rootLogger=${zookeeper.root.logger}
+        log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+        log4j.appender.CONSOLE.Threshold=${zookeeper.console.threshold}
+        log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+        log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+        log4j.appender.ROLLINGFILE=org.apache.log4j.RollingFileAppender
+        log4j.appender.ROLLINGFILE.Threshold=${zookeeper.log.threshold}
+        log4j.appender.ROLLINGFILE.File=${zookeeper.log.dir}/${zookeeper.log.file}
+        log4j.appender.ROLLINGFILE.MaxFileSize=${zookeeper.log.maxfilesize}
+        log4j.appender.ROLLINGFILE.MaxBackupIndex=${zookeeper.log.maxbackupindex}
+        log4j.appender.ROLLINGFILE.layout=org.apache.log4j.PatternLayout
+        log4j.appender.ROLLINGFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+        log4j.appender.TRACEFILE=org.apache.log4j.FileAppender
+        log4j.appender.TRACEFILE.Threshold=TRACE
+        log4j.appender.TRACEFILE.File=${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}
+        log4j.appender.TRACEFILE.layout=org.apache.log4j.PatternLayout
+        log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n        
     kind: ConfigMap
     metadata:
       name: zookeeper
+
+
 
   - apiVersion: v1
     kind: Service
@@ -52,14 +81,324 @@
         app: zookeeper
 
 
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: zookeeper
+    spec:
+      selector:
+        matchLabels:
+          app: zookeeper
+      serviceName: zookeeper
+      replicas: 3
+      template:
+        metadata:
+          labels:
+            app: zookeeper
+        spec:
+          containers:
+          - env:
+              - name: NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace            
+            name: zookeeper
+            image: ${NAMESPACE}/zookeeper:3.5.5
+            imagePullPolicy: Always
+            command:
+            - bash
+            - "-c"
+            - |
+              export HOST=`hostname -s`    
+                  if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
+                      NAME=${BASH_REMATCH[1]}
+                      ORD=${BASH_REMATCH[2]}
+                  else
+                      echo "Failed to extract ordinal from hostname $HOST"
+                      exit 1
+                  fi
+                  MY_ID=$((ORD+1))
+                  if [ ! -f /opt/zookeeper-data/myid ]; then
+                  echo $MY_ID >> /opt/zookeeper-data/myid
+                  fi 
+              /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg                           
+            ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: leader-election            
+            volumeMounts:
+            - name: data
+              mountPath: /opt/zookeeper-data
+            - name: configmap
+              mountPath: /opt/zookeeper/conf
+            # livenessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       OK=$(echo ruok | nc 127.0.0.1 2181)
+            #       if [ "$OK" == "imok" ]; then
+            #         exit 0
+            #       else
+            #         exit 1
+            #       fi                  
+            #   initialDelaySeconds: 10
+            #   timeoutSeconds: 5
+            # readinessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       OK=$(echo ruok | nc 127.0.0.1 2181)
+            #       if [ "$OK" == "imok" ]; then
+            #         exit 0
+            #       else
+            #         exit 1
+            #       fi                  
+            #   initialDelaySeconds: 10
+            #   timeoutSeconds: 5   
+          volumes:
+          - name: configmap
+            configMap:
+              name: zookeeper                
+      volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          resources:
+            requests:
+              storage: 1Gi
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - zookeeper
+            from:
+              kind: ImageStreamTag
+              name: "${NAMESPACE}/zookeeper:3.5.5"
+          type: ImageChange              
+
+
+############################## FIN ZOOKEEPER
+
+
+
+##############################KAFKA
+
+
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: kafka
+      labels:
+        app: kafka
+    spec:
+      ports:
+      - port: 9092
+        name: server1
+      - port: 9093
+        name: server2        
+      clusterIP: None
+      selector:
+        app: kafka
+
+
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: kafka
+    spec:
+      selector:
+        matchLabels:
+          app: kafka
+      serviceName: kafka
+      replicas: 3
+      template:
+        metadata:
+          labels:
+            app: kafka
+        spec:
+          containers:
+          - env:
+              - name: NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+            name: kafka
+            image: ${NAMESPACE}/kafka:2.3.0
+            imagePullPolicy: Always
+            command:
+            - bash
+            - "-c"
+            - |
+              echo $NAMESPACE
+              /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
+              --override listeners=PLAINTEXT://:9093 \
+              --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
+              --override log.dir=/opt/kafka-logs \
+              --override auto.create.topics.enable=true \
+              --override auto.leader.rebalance.enable=true \
+              --override background.threads=10 \
+              --override compression.type=producer \
+              --override delete.topic.enable=false \
+              --override leader.imbalance.check.interval.seconds=300 \
+              --override leader.imbalance.per.broker.percentage=10 \
+              --override log.flush.interval.messages=9223372036854775807 \
+              --override log.flush.offset.checkpoint.interval.ms=60000 \
+              --override log.flush.scheduler.interval.ms=9223372036854775807 \
+              --override log.retention.bytes=-1 \
+              --override log.retention.hours=168 \
+              --override log.roll.hours=168 \
+              --override log.roll.jitter.hours=0 \
+              --override log.segment.bytes=1073741824 \
+              --override log.segment.delete.delay.ms=60000 \
+              --override message.max.bytes=1000012 \
+              --override min.insync.replicas=1 \
+              --override num.io.threads=8 \
+              --override num.network.threads=3 \
+              --override num.recovery.threads.per.data.dir=1 \
+              --override num.replica.fetchers=1 \
+              --override offset.metadata.max.bytes=4096 \
+              --override offsets.commit.required.acks=-1 \
+              --override offsets.commit.timeout.ms=5000 \
+              --override offsets.load.buffer.size=5242880 \
+              --override offsets.retention.check.interval.ms=600000 \
+              --override offsets.retention.minutes=1440 \
+              --override offsets.topic.compression.codec=0 \
+              --override offsets.topic.num.partitions=50 \
+              --override offsets.topic.replication.factor=3 \
+              --override offsets.topic.segment.bytes=104857600 \
+              --override queued.max.requests=500 \
+              --override quota.consumer.default=9223372036854775807 \
+              --override quota.producer.default=9223372036854775807 \
+              --override replica.fetch.min.bytes=1 \
+              --override replica.fetch.wait.max.ms=500 \
+              --override replica.high.watermark.checkpoint.interval.ms=5000 \
+              --override replica.lag.time.max.ms=10000 \
+              --override replica.socket.receive.buffer.bytes=65536 \
+              --override replica.socket.timeout.ms=30000 \
+              --override request.timeout.ms=30000 \
+              --override socket.receive.buffer.bytes=102400 \
+              --override socket.request.max.bytes=104857600 \
+              --override socket.send.buffer.bytes=102400 \
+              --override unclean.leader.election.enable=true \
+              --override zookeeper.session.timeout.ms=6000 \
+              --override zookeeper.set.acl=false \
+              --override broker.id.generation.enable=true \
+              --override connections.max.idle.ms=600000 \
+              --override controlled.shutdown.enable=true \
+              --override controlled.shutdown.max.retries=3 \
+              --override controlled.shutdown.retry.backoff.ms=5000 \
+              --override controller.socket.timeout.ms=30000 \
+              --override default.replication.factor=1 \
+              --override fetch.purgatory.purge.interval.requests=1000 \
+              --override group.max.session.timeout.ms=300000 \
+              --override group.min.session.timeout.ms=6000 \
+              --override log.cleaner.backoff.ms=15000 \
+              --override log.cleaner.dedupe.buffer.size=134217728 \
+              --override log.cleaner.delete.retention.ms=86400000 \
+              --override log.cleaner.enable=true \
+              --override log.cleaner.io.buffer.load.factor=0.9 \
+              --override log.cleaner.io.buffer.size=524288 \
+              --override log.cleaner.io.max.bytes.per.second=1.7976931348623157E308 \
+              --override log.cleaner.min.cleanable.ratio=0.5 \
+              --override log.cleaner.min.compaction.lag.ms=0 \
+              --override log.cleaner.threads=1 \
+              --override log.cleanup.policy=delete \
+              --override log.index.interval.bytes=4096 \
+              --override log.index.size.max.bytes=10485760 \
+              --override log.message.timestamp.difference.max.ms=9223372036854775807 \
+              --override log.message.timestamp.type=CreateTime \
+              --override log.preallocate=false \
+              --override log.retention.check.interval.ms=300000 \
+              --override max.connections.per.ip=2147483647 \
+              --override num.partitions=1 \
+              --override producer.purgatory.purge.interval.requests=1000 \
+              --override replica.fetch.backoff.ms=1000 \
+              --override replica.fetch.max.bytes=1048576 \
+              --override replica.fetch.response.max.bytes=10485760 \
+              --override reserved.broker.max.id=1000
+            ports:
+            - containerPort: 9092
+              name: server
+            volumeMounts:
+            - name: data
+              mountPath: /opt/kafka-logs                                           
+      volumeClaimTemplates:
+      - metadata:
+          name: data
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          resources:
+            requests:
+              storage: 1Gi
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - kafka
+            from:
+              kind: ImageStreamTag
+              name: "${NAMESPACE}/kafka:2.3.0"
+          type: ImageChange                  
+
+
+#####################FIN KAFKA
+
+
+
+###################BUILDCONFIGS
+
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        app: kafka
+        build: kafka
+      name: kafka
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector: null
+      output:
+        to:
+          kind: ImageStreamTag
+          name: 'kafka:2.3.0'
+      postCommit: {}
+      resources: {}
+      runPolicy: Serial
+      source:
+        contextDir: kafka
+        git:
+          ref: master
+          uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+        type: Git
+      strategy:
+        dockerStrategy:
+          dockerfilePath: Dockerfile
+        type: Docker
+      successfulBuildsHistoryLimit: 5
+      triggers:
+        - type: ConfigChange
+
 
   - apiVersion: v1
     kind: ImageStream
     metadata:
       labels:
-        app: zookeeper
-      name: zookeeper
+        app: kafka
+      name: kafka
     spec: {}
+
 
 
   - apiVersion: v1
@@ -94,51 +433,21 @@
         - type: ConfigChange
 
 
-
-  - apiVersion: apps/v1
-    kind: StatefulSet
+  - apiVersion: v1
+    kind: ImageStream
     metadata:
+      labels:
+        app: zookeeper
       name: zookeeper
-    spec:
-      selector:
-        matchLabels:
-          app: zookeeper
-      serviceName: zookeeper
-      replicas: 3
-      template:
-        metadata:
-          labels:
-            app: zookeeper
-        spec:
-          containers:
-          - name: zookeeper
-            image: zookeeper:3.5.5
-            command:
-            - bash
-            - "-c"
-            - |
-              /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
-            ports:
-            - containerPort: 2181
-              name: client
-            - containerPort: 2888
-              name: server
-            - containerPort: 3888
-              name: leader-election
-            resources:
-              requests:
-                cpu: 500m
-                memory: 1Gi
-      triggers:
-        - type: ConfigChange
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-              - zookeeper
-            from:
-              kind: ImageStreamTag
-              name: "zookeeper:3.5.5"
-          type: ImageChange
+    spec: {}    
 
+########################
 
-##############################
+################PARAMETROS
+  parameters:
+    - name: NAMESPACE
+      displayName: Nombre del proyecto donde esta desplegando el template
+      value: ''
+      required: true
+
+###############
