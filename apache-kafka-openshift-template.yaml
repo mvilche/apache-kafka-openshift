@@ -125,27 +125,10 @@
               name: server
             - containerPort: 3888
               name: leader-election
-            volumeMounts:
-            - name: data
-              mountPath: /opt/zookeeper-data
-            - name: config-map
-              mountPath: /opt/zookeeper/conf
             resources:
               requests:
                 cpu: 500m
                 memory: 1Gi
-          volumes:           
-          - name: config-map
-            configMap:
-              name: zookeeper
-      volumeClaimTemplates:
-      - metadata:
-          name: data
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 10Gi
       triggers:
         - type: ConfigChange
         - imageChangeParams:
