@@ -9,6 +9,4 @@ RUN chown -R 1001 /opt /usr/bin/run.sh && \
 chgrp -R 0 /opt /usr/bin/run.sh && \
 chmod -R g=u /opt /usr/bin/run.sh 
 USER 1001
-EXPOSE 2181
-ENTRYPOINT ["/usr/bin/run.sh"]
-CMD ["/opt/zookeeper/conf/zoo.cfg"]
+EXPOSE 2181 2888 3888
