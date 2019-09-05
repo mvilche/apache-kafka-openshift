@@ -109,7 +109,7 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: JVMFLAGS
-                value: ="-Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true"                               
+                value: -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
             name: zookeeper
             image: zookeeper:3.5.5
             imagePullPolicy: Always
@@ -234,7 +234,7 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: KAFKA_HEAP_OPTS
-                value: ="-Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true"
+                value: -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
             name: kafka
             image: kafka:2.3.0
             imagePullPolicy: Always
