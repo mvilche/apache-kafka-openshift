@@ -109,7 +109,7 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: JVMFLAGS
-                value: -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
             name: zookeeper
             image: zookeeper:3.5.5
             imagePullPolicy: Always
@@ -142,34 +142,34 @@
               mountPath: /opt/zookeeper-data
             - name: configmap
               mountPath: /opt/zookeeper/conf
-            # livenessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       OK=$(echo ruok | nc 127.0.0.1 2181)
-            #       if [ "$OK" == "imok" ]; then
-            #         exit 0
-            #       else
-            #         exit 1
-            #       fi                  
-            #   initialDelaySeconds: 10
-            #   timeoutSeconds: 5
-            # readinessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       OK=$(echo ruok | nc 127.0.0.1 2181)
-            #       if [ "$OK" == "imok" ]; then
-            #         exit 0
-            #       else
-            #         exit 1
-            #       fi                  
-            #   initialDelaySeconds: 10
-            #   timeoutSeconds: 5   
+            livenessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  OK=$(echo ruok | nc 127.0.0.1 2181)
+                  if [ "$OK" == "imok" ]; then
+                    exit 0
+                  else
+                    exit 1
+                  fi                  
+              initialDelaySeconds: 90
+              timeoutSeconds: 5
+            readinessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  echo hello | nc 127.0.0.1 2181
+                  if [ "$?" == "0" ]; then
+                    exit 0
+                  else
+                    exit 1
+                  fi                  
+              initialDelaySeconds: 90
+              timeoutSeconds: 5   
           volumes:
           - name: configmap
             configMap:
@@ -234,7 +234,7 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: KAFKA_HEAP_OPTS
-                value: -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
             name: kafka
             image: kafka:2.3.0
             imagePullPolicy: Always
@@ -453,6 +453,206 @@
     spec: {}    
 
 ########################
+
+
+
+##################### KAFKA MANAGER
+
+
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: "kafka-manager"
+      name: "kafka-manager"
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        app: kafka-manager
+        deploymentconfig: kafka-manager
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: kafka-manager
+            deploymentconfig: kafka-manager
+        spec:
+          containers:
+            - env:
+                - name: ZK_HOSTS
+                  value: zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true                                  
+              image: "kafka-manager:latest"
+              imagePullPolicy: Always
+              name: kafka-manager
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - kafka-manager
+            from:
+              kind: ImageStreamTag
+              name: "kafka-manager:latest"
+          type: ImageChange
+
+
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: kafka-manager
+      name: kafka-manager
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app: kafka-manager
+        deploymentconfig: kafka-manager
+      sessionAffinity: None
+      type: ClusterIP
+
+
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      labels:
+        app: kafka-manager
+      name: kafka-manager-http
+    spec:
+      port:
+        targetPort: http
+      to:
+        kind: Service
+        name: kafka-manager
+        weight: 100
+      wildcardPolicy: None
+
+
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        app: kafka-manager-sbt
+        build: kafka-manager-sbt
+      name: kafka-manager-sbt
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector: null
+      output:
+        to:
+          kind: ImageStreamTag
+          name: 'kafka-manager-sbt:latest'
+      postCommit: {}
+      resources: {}
+      runPolicy: Serial
+      source:
+        contextDir: kafka-manager
+        git:
+          ref: master
+          uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+        type: Git
+      strategy:
+        dockerStrategy:
+          dockerfilePath: Dockerfile
+        type: Docker
+      successfulBuildsHistoryLimit: 5
+      triggers:
+        - type: ConfigChange
+
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      labels:
+        app: kafka-manager-sbt
+      name: kafka-manager-sbt
+    spec: {}
+
+
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        app: kafka-manager
+      name: kafka-manager
+    spec:
+      completionDeadlineSeconds: 1800
+      output:
+        to:
+          kind: ImageStreamTag
+          name: kafka-manager:latest
+      source:
+        type: Dockerfile
+        dockerfile: |-
+                FROM alpine:3.10
+                USER root
+                RUN apk add --update --no-cache openjdk8 bash curl && mkdir -p /opt
+                COPY kafka-manager-2.0.0.2 /opt/kafka-manager-2.0.0.2
+                RUN chown 1001:0 -R /opt && \
+                chgrp -R 0 /opt && \
+                chmod +x /opt/kafka-manager-2.0.0.2/bin/* && \
+                chmod R g=u /opt
+                USER 1001
+                CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager"]
+        images:
+        - from:
+            kind: ImageStreamTag
+            name: kafka-manager-sbt:latest
+          paths:
+          - sourcePath: /opt/kafka-manager/target/universal/kafka-manager-2.0.0.2
+            destinationDir: "."
+      strategy:
+        dockerStrategy:
+          from:
+            kind: ImageStreamTag
+            name: kafka-manager:latest
+        type: Docker
+      triggers:
+      - type: "imageChange"
+        imageChange:
+          from:
+            kind: "ImageStreamTag"
+            name: "kafka-manager:latest"
+
+
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      labels:
+        app: kafka-manager
+      name: kafka-manager
+    spec: {}
+#####################
+
 
 
 ################PARAMETROS
