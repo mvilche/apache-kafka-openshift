@@ -76,6 +76,8 @@
         name: server
       - port: 3888
         name: leader-election
+      - port: 2181
+        name: client        
       clusterIP: None
       selector:
         app: zookeeper
@@ -86,6 +88,7 @@
     metadata:
       name: zookeeper
     spec:
+      podManagementPolicy: Parallel
       selector:
         matchLabels:
           app: zookeeper
@@ -93,6 +96,8 @@
       replicas: 3
       template:
         metadata:
+          annotations:
+            alpha.image.policy.openshift.io/resolve-names: '*'        
           labels:
             app: zookeeper
         spec:
@@ -102,9 +107,11 @@
                 valueFrom:
                   fieldRef:
                     apiVersion: v1
-                    fieldPath: metadata.namespace            
+                    fieldPath: metadata.namespace
+              - name: JVMFLAGS
+                value: ="-Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true"                               
             name: zookeeper
-            image: ${NAMESPACE}/zookeeper:3.5.5
+            image: zookeeper:3.5.5
             imagePullPolicy: Always
             command:
             - bash
@@ -174,17 +181,7 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 1Gi
-      triggers:
-        - type: ConfigChange
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-              - zookeeper
-            from:
-              kind: ImageStreamTag
-              name: "${NAMESPACE}/zookeeper:3.5.5"
-          type: ImageChange              
+              storage: 1Gi           
 
 
 ############################## FIN ZOOKEEPER
@@ -216,13 +213,16 @@
     metadata:
       name: kafka
     spec:
+      podManagementPolicy: Parallel
       selector:
         matchLabels:
           app: kafka
       serviceName: kafka
       replicas: 3
-      template:
+      template:      
         metadata:
+          annotations:
+            alpha.image.policy.openshift.io/resolve-names: '*'
           labels:
             app: kafka
         spec:
@@ -233,8 +233,10 @@
                   fieldRef:
                     apiVersion: v1
                     fieldPath: metadata.namespace
+              - name: KAFKA_HEAP_OPTS
+                value: ="-Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true"
             name: kafka
-            image: ${NAMESPACE}/kafka:2.3.0
+            image: kafka:2.3.0
             imagePullPolicy: Always
             command:
             - bash
@@ -327,9 +329,29 @@
               --override replica.fetch.max.bytes=1048576 \
               --override replica.fetch.response.max.bytes=10485760 \
               --override reserved.broker.max.id=1000
+            # livenessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9093                
+            #   initialDelaySeconds: 10
+            #   timeoutSeconds: 5
+            # readinessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9093              
+            #   initialDelaySeconds: 10
+            #   timeoutSeconds: 5              
             ports:
             - containerPort: 9092
               name: server
+            - containerPort: 9093
+              name: server2              
             volumeMounts:
             - name: data
               mountPath: /opt/kafka-logs                                           
@@ -340,21 +362,10 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 1Gi
-      triggers:
-        - type: ConfigChange
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-              - kafka
-            from:
-              kind: ImageStreamTag
-              name: "${NAMESPACE}/kafka:2.3.0"
-          type: ImageChange                  
+              storage: 1Gi                 
 
 
 #####################FIN KAFKA
-
 
 
 ###################BUILDCONFIGS
@@ -442,6 +453,7 @@
     spec: {}    
 
 ########################
+
 
 ################PARAMETROS
   parameters:
