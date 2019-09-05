@@ -77,10 +77,29 @@
       - port: 3888
         name: leader-election
       - port: 2181
-        name: client        
+        name: client
+      - port: 8080
+        name: http               
       clusterIP: None
       selector:
         app: zookeeper
+
+
+
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      labels:
+        app: zookeeper
+      name: zookeeper
+    spec:
+      port:
+        targetPort: http
+      to:
+        kind: Service
+        name: zookeeper
+        weight: 100
+      wildcardPolicy: None        
 
 
   - apiVersion: apps/v1
@@ -136,40 +155,42 @@
             - containerPort: 2888
               name: server
             - containerPort: 3888
-              name: leader-election            
+              name: leader-election
+            - containerPort: 8080
+              name: http                          
             volumeMounts:
             - name: data
               mountPath: /opt/zookeeper-data
             - name: configmap
               mountPath: /opt/zookeeper/conf
-            livenessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  OK=$(echo ruok | nc 127.0.0.1 2181)
-                  if [ "$OK" == "imok" ]; then
-                    exit 0
-                  else
-                    exit 1
-                  fi                  
-              initialDelaySeconds: 90
-              timeoutSeconds: 5
-            readinessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  echo hello | nc 127.0.0.1 2181
-                  if [ "$?" == "0" ]; then
-                    exit 0
-                  else
-                    exit 1
-                  fi                  
-              initialDelaySeconds: 90
-              timeoutSeconds: 5   
+            # livenessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       OK=$(echo ruok | nc 127.0.0.1 2181)
+            #       if [ "$OK" == "imok" ]; then
+            #         exit 0
+            #       else
+            #         exit 1
+            #       fi                  
+            #   initialDelaySeconds: 90
+            #   timeoutSeconds: 5
+            # readinessProbe:
+            #   exec:
+            #     command:
+            #     - bash
+            #     - "-c"
+            #     - |
+            #       echo hello | nc 127.0.0.1 2181
+            #       if [ "$?" == "0" ]; then
+            #         exit 0
+            #       else
+            #         exit 1
+            #       fi                  
+            #   initialDelaySeconds: 90
+            #   timeoutSeconds: 5   
           volumes:
           - name: configmap
             configMap:
@@ -257,7 +278,7 @@
               --override log.flush.interval.messages=9223372036854775807 \
               --override log.flush.offset.checkpoint.interval.ms=60000 \
               --override log.flush.scheduler.interval.ms=9223372036854775807 \
-              --override log.retention.bytes=-1 \
+              --override log.retention.bytes=300 \
               --override log.retention.hours=168 \
               --override log.roll.hours=168 \
               --override log.roll.jitter.hours=0 \
@@ -642,7 +663,7 @@
         imageChange:
           from:
             kind: "ImageStreamTag"
-            name: "kafka-manager-s2i:latest"
+            name: "kafka-manager-sbt:latest"
 
 
   - apiVersion: v1
