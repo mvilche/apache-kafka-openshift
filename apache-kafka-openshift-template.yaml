@@ -10,7 +10,7 @@
       openshift.io/display-name: "kafka-zookeeper-openshift-mvilche"
       iconClass: "icon-github"
       description: >-
-        APACHE KAFKA + ZOOKEEPER
+        APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
         Martin Fabrizzio Vilche.
         https://github.com/mvilche.
 
@@ -141,7 +141,7 @@
                       NAME=${BASH_REMATCH[1]}
                       ORD=${BASH_REMATCH[2]}
                   else
-                      echo "Failed to extract ordinal from hostname $HOST"
+                      echo "ERROR OBTENIENDO HOSTNAME $HOST"
                       exit 1
                   fi
                   MY_ID=$((ORD+1))
@@ -641,14 +641,16 @@
         dockerfile: |-
                 FROM alpine:3.10
                 USER root
-                RUN apk add --update --no-cache openjdk8 bash curl && mkdir -p /opt
+                RUN apk add --update --no-cache shadow busybox-suid openjdk8 bash curl && mkdir -p /opt
                 COPY kafka-manager-2.0.0.2 /opt/kafka-manager-2.0.0.2
-                RUN chown 1001:0 -R /opt && \
+                RUN adduser -u 1001 -D -h /opt/kafka-manager-2.0.0.2 app && usermod -aG 0 app && \
+                chown 1001:0 -R /opt && \
                 chgrp -R 0 /opt && \
                 chmod +x /opt/kafka-manager-2.0.0.2/bin/* && \
                 chmod -R g=u /opt
                 USER 1001
-                CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager"]
+                ENV HOME /opt/kafka-manager-2.0.0.2
+                CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager", "-Dconfig.file=/opt/kafka-manager-2.0.0.2/conf/application.conf", "-Dapplication.home=/opt/kafka-manager-2.0.0.2"]
         images:
         - from:
             kind: ImageStreamTag
