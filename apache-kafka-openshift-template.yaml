@@ -489,8 +489,6 @@
         spec:
           containers:
             - env:
-                - name: ZK_HOSTS
-                  value: zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181
                 - name: NAMESPACE
                   valueFrom:
                     fieldRef:
@@ -502,11 +500,18 @@
               imagePullPolicy: Always
               name: kafka-manager
               ports:
-                - containerPort: 8080
+                - containerPort: 9000
                   protocol: TCP
-              terminationMessagePath: /dev/termination-log
-              terminationMessagePolicy: File
+              volumeMounts:
+              - name: kafka-manager
+                mountPath: /opt/kafka-manager-2.0.0.2/conf
+                terminationMessagePath: /dev/termination-log
+                terminationMessagePolicy: File
           dnsPolicy: ClusterFirst
+          volumes:
+          - name: kafka-manager
+            configMap:
+              name: kafka-manager          
           restartPolicy: Always
           schedulerName: default-scheduler
           terminationGracePeriodSeconds: 30
@@ -532,9 +537,9 @@
     spec:
       ports:
         - name: http
-          port: 8080
+          port: 9000
           protocol: TCP
-          targetPort: 8080
+          targetPort: 9000
       selector:
         app: kafka-manager
         deploymentconfig: kafka-manager
@@ -620,7 +625,7 @@
                 RUN chown 1001:0 -R /opt && \
                 chgrp -R 0 /opt && \
                 chmod +x /opt/kafka-manager-2.0.0.2/bin/* && \
-                chmod R g=u /opt
+                chmod -R g=u /opt
                 USER 1001
                 CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager"]
         images:
@@ -631,17 +636,13 @@
           - sourcePath: /opt/kafka-manager/target/universal/kafka-manager-2.0.0.2
             destinationDir: "."
       strategy:
-        dockerStrategy:
-          from:
-            kind: ImageStreamTag
-            name: kafka-manager:latest
         type: Docker
       triggers:
       - type: "imageChange"
         imageChange:
           from:
             kind: "ImageStreamTag"
-            name: "kafka-manager:latest"
+            name: "kafka-manager-s2i:latest"
 
 
   - apiVersion: v1
@@ -651,6 +652,241 @@
         app: kafka-manager
       name: kafka-manager
     spec: {}
+
+
+
+  - apiVersion: v1
+    data:
+      routes: |-
+        # Copyright 2015 Yahoo Inc. Licensed under the Apache License, Version 2.0
+        # See accompanying LICENSE file.
+        #
+        # Routes
+        # This file defines all application routes (Higher priority routes first)
+        # ~~~~
+        # Home page
+        GET    /                                                    controllers.Application.index
+        GET    /clusters/:c                                         controllers.Cluster.cluster(c:String)
+        GET    /clusters/:c/topics                                  controllers.Topic.topics(c:String)
+        GET    /clusters/:c/topics/addPartitions                    controllers.Topic.addPartitionsToMultipleTopics(c:String)
+        POST   /clusters/:c/topics/addPartitions                    controllers.Topic.handleAddPartitionsToMultipleTopics(c:String)
+        GET    /clusters/:c/topics/:t                               controllers.Topic.topic(c:String, t:String, force:Boolean ?= false)
+        GET    /clusters/:c/logkafkas                               controllers.Logkafka.logkafkas(c:String)
+        GET    /clusters/:c/logkafkas/:h/:l                         controllers.Logkafka.logkafka(c:String, h:String, l:String)
+        GET    /clusters/:c/brokers                                 controllers.Cluster.brokers(c: String)
+        GET    /clusters/:c/brokers/:b                              controllers.Cluster.broker(c: String, b:Int)
+        GET    /clusters/:c/consumers                               controllers.Consumer.consumers(c: String)
+        GET    /clusters/:c/consumers/:g/type/:ct                   controllers.Consumer.consumer(c: String, g:String, ct: String)
+        GET    /clusters/:c/consumers/:g/topic/:t/type/:ct          controllers.Consumer.consumerAndTopic(c: String, g:String, t:String, ct: String)
+        GET    /clusters/:c/leader                                  controllers.PreferredReplicaElection.preferredReplicaElection(c:String)
+        POST   /clusters/:c/leader                                  controllers.PreferredReplicaElection.handleRunElection(c:String)
+        GET    /clusters/:c/assignment                              controllers.ReassignPartitions.reassignPartitions(c:String)
+        POST   /clusters/:c/assignment                              controllers.ReassignPartitions.handleOperation(c:String,t:String)
+        GET    /clusters/:c/assignment/confirm                      controllers.ReassignPartitions.confirmAssignment(c:String,t:String)
+        POST   /clusters/:c/assignment/generate                     controllers.ReassignPartitions.handleGenerateAssignment(c:String,t:String)
+        GET    /clusters/:c/assignments/confirm                     controllers.ReassignPartitions.confirmMultipleAssignments(c:String)
+        POST   /clusters/:c/assignments/generate                    controllers.ReassignPartitions.handleGenerateMultipleAssignments(c:String)
+        #GET   /clusters/:c/assignments/manual                      controllers.ReassignPartitions.manualMultipleAssignments(c:String)
+        #POST  /clusters/:c/assignments/manual                      controllers.ReassignPartitions.handleManualAssignment(c:String)
+        GET    /clusters/:c/assignments/run                         controllers.ReassignPartitions.runMultipleAssignments(c:String)
+        POST   /clusters/:c/assignments/run                         controllers.ReassignPartitions.handleRunMultipleAssignments(c:String)
+        GET    /addCluster                                          controllers.Cluster.addCluster
+        GET    /updateCluster                                       controllers.Cluster.updateCluster(c: String)
+        POST   /clusters                                            controllers.Cluster.handleAddCluster
+        POST   /clusters/:c                                         controllers.Cluster.handleUpdateCluster(c:String)
+        GET    /clusters/:c/createTopic                             controllers.Topic.createTopic(c:String)
+        POST   /clusters/:c/topics/create                           controllers.Topic.handleCreateTopic(c:String)
+        GET    /clusters/:c/topics/:t/confirm_delete                controllers.Topic.confirmDeleteTopic(c:String,t:String)
+        POST   /clusters/:c/topics/delete                           controllers.Topic.handleDeleteTopic(c:String,t:String)
+        GET    /clusters/:c/topics/:t/addPartitions                 controllers.Topic.addPartitions(c:String,t:String)
+        POST   /clusters/:c/topics/:t/addPartitions                 controllers.Topic.handleAddPartitions(c:String,t:String)
+        GET    /clusters/:c/topics/:t/updateConfig                  controllers.Topic.updateConfig(c:String,t:String)
+        POST   /clusters/:c/topics/:t/updateConfig                  controllers.Topic.handleUpdateConfig(c:String,t: String)
+        GET    /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.manualAssignments(c:String, t:String)
+        POST   /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.handleManualAssignment(c:String, t: String)
+        GET    /clusters/:c/createLogkafka                          controllers.Logkafka.createLogkafka(c:String)
+        POST   /clusters/:c/logkafkas/create                        controllers.Logkafka.handleCreateLogkafka(c:String)
+        POST   /clusters/:c/logkafkas/delete                        controllers.Logkafka.handleDeleteLogkafka(c:String, h:String, l:String)
+        GET    /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.updateConfig(c:String, h:String, l:String)
+        POST   /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.handleUpdateConfig(c:String, h:String, l:String)
+        POST   /clusters/:c/logkafkas/:h/:l/disableConfig           controllers.Logkafka.handleDisableConfig(c:String, h:String, l:String)
+        POST   /clusters/:c/logkafkas/:h/:l/enableConfig            controllers.Logkafka.handleEnableConfig(c:String, h:String, l:String)
+        GET    /api/status/:c/brokers                               controllers.api.KafkaStateCheck.brokers(c:String)
+        GET    /api/status/:c/brokers/extended                      controllers.api.KafkaStateCheck.brokersExtended(c:String)
+        GET    /api/status/:c/topics                                controllers.api.KafkaStateCheck.topics(c:String)
+        GET    /api/status/:c/topicIdentities                       controllers.api.KafkaStateCheck.topicIdentities(c:String)
+        GET    /api/status/clusters                                 controllers.api.KafkaStateCheck.clusters
+        GET    /api/status/:c/:t/underReplicatedPartitions          controllers.api.KafkaStateCheck.underReplicatedPartitions(c:String,t:String)
+        GET    /api/status/:c/:t/unavailablePartitions              controllers.api.KafkaStateCheck.unavailablePartitions(c:String,t:String)
+        GET    /api/status/:cluster/:consumer/:topic/:consumerType/topicSummary   controllers.api.KafkaStateCheck.topicSummaryAction(cluster:String, consumer:String, topic:String, consumerType:String)
+        GET    /api/status/:cluster/:consumer/:consumerType/groupSummary          controllers.api.KafkaStateCheck.groupSummaryAction(cluster:String, consumer:String, consumerType:String)
+        GET    /api/status/:cluster/consumersSummary                controllers.api.KafkaStateCheck.consumersSummaryAction(cluster:String)
+        # Versioned Assets
+        GET    /vassets/*file                                       controllers.Assets.versioned(path="/public", file: Asset)
+        # Unversioned Assets
+        GET    /assets/*file                                        controllers.Assets.at(path="/public", file)
+        # Ping / Health Check
+        GET    /api/health                                          controllers.ApiHealth.ping      
+      logger.xml: |-
+        <configuration>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>${application.home}/logs/application.log</file>
+                <encoder>
+                  <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+                </encoder>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>5</maxHistory>
+                    <totalSizeCap>5GB</totalSizeCap>
+                </rollingPolicy>
+            </appender>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
+                </encoder>
+            </appender>
+            <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+                <appender-ref ref="FILE" />
+            </appender>
+            <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+                <appender-ref ref="STDOUT" />
+            </appender>
+            <logger name="play" level="INFO" />
+            <logger name="application" level="INFO" />
+            <logger name="kafka.manager" level="INFO" />
+            <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+            <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+            <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+            <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+            <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+            <logger name="org.apache.zookeeper" level="INFO"/>
+            <root level="WARN">
+                <appender-ref ref="ASYNCFILE" />
+                <appender-ref ref="ASYNCSTDOUT" />
+            </root>
+        </configuration>
+        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ^C
+        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ls
+        application.conf     consumer.properties  logback.xml          logger.xml           routes
+        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # cat logger.xml 
+        <configuration>
+          <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
+          <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${application.home}/logs/application.log</file>
+            <encoder>
+              <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+              <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+              <maxHistory>5</maxHistory>
+              <totalSizeCap>5GB</totalSizeCap>
+            </rollingPolicy>
+          </appender>
+          <logger name="play" level="INFO" />
+          <logger name="application" level="DEBUG" />
+          <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+          <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+          <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+          <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+          <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+          <logger name="org.apache.zookeeper" level="INFO"/>
+          <logger name="akka" level="INFO" />
+          <logger name="kafka" level="INFO" />
+          <root level="INFO">
+            <appender-ref ref="FILE" />
+          </root>
+        </configuration>
+      logback.xml: |-
+        <configuration>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>${application.home}/logs/application.log</file>
+                <encoder>
+                  <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+                </encoder>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>5</maxHistory>
+                    <totalSizeCap>5GB</totalSizeCap>
+                </rollingPolicy>
+            </appender>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
+                </encoder>
+            </appender>
+            <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+                <appender-ref ref="FILE" />
+            </appender>
+            <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+                <appender-ref ref="STDOUT" />
+            </appender>
+            <logger name="play" level="INFO" />
+            <logger name="application" level="INFO" />
+            <logger name="kafka.manager" level="INFO" />
+            <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+            <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+            <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+            <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+            <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+            <logger name="org.apache.zookeeper" level="INFO"/>
+            <root level="WARN">
+                <appender-ref ref="ASYNCFILE" />
+                <appender-ref ref="ASYNCSTDOUT" />
+            </root>
+        </configuration>
+      consumer.properties: |-
+        security.protocol=PLAINTEXT
+        key.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
+        value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer      
+      application.conf: |-
+        play.crypto.secret="^<csmm5Fx4d=r2HEX8pelM3iBkFVv?k[mc;IZE<_Qoq8EkX_/7@Zt6dP05Pzea3U"
+        play.crypto.secret=${?APPLICATION_SECRET}
+        play.http.session.maxAge="1h"
+        play.i18n.langs=["en"]
+        play.http.requestHandler = "play.http.DefaultHttpRequestHandler"
+        play.http.context = "/"
+        play.application.loader=loader.KafkaManagerLoader
+        kafka-manager.zkhosts="zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2181"
+        kafka-manager.zkhosts=${?ZK_HOSTS}
+        pinned-dispatcher.type="PinnedDispatcher"
+        pinned-dispatcher.executor="thread-pool-executor"
+        application.features=["KMClusterManagerFeature","KMTopicManagerFeature","KMPreferredReplicaElectionFeature","KMReassignPartitionsFeature"]
+        akka {
+          loggers = ["akka.event.slf4j.Slf4jLogger"]
+          loglevel = "INFO"
+        }
+        akka.logger-startup-timeout = 60s
+        basicAuthentication.enabled=false
+        basicAuthentication.enabled=${?KAFKA_MANAGER_AUTH_ENABLED}
+        basicAuthentication.ldap.enabled=false
+        basicAuthentication.ldap.enabled=${?KAFKA_MANAGER_LDAP_ENABLED}
+        basicAuthentication.ldap.server=""
+        basicAuthentication.ldap.server=${?KAFKA_MANAGER_LDAP_SERVER}
+        basicAuthentication.ldap.port=389
+        basicAuthentication.ldap.port=${?KAFKA_MANAGER_LDAP_PORT}
+        basicAuthentication.ldap.username=""
+        basicAuthentication.ldap.username=${?KAFKA_MANAGER_LDAP_USERNAME}
+        basicAuthentication.ldap.password=""
+        basicAuthentication.ldap.password=${?KAFKA_MANAGER_LDAP_PASSWORD}
+        basicAuthentication.ldap.search-base-dn=""
+        basicAuthentication.ldap.search-base-dn=${?KAFKA_MANAGER_LDAP_SEARCH_BASE_DN}
+        basicAuthentication.ldap.search-filter="(uid=$capturedLogin$)"
+        basicAuthentication.ldap.search-filter=${?KAFKA_MANAGER_LDAP_SEARCH_FILTER}
+        basicAuthentication.ldap.connection-pool-size=10
+        basicAuthentication.ldap.connection-pool-size=${?KAFKA_MANAGER_LDAP_CONNECTION_POOL_SIZE}
+        basicAuthentication.ldap.ssl=false
+        basicAuthentication.ldap.ssl=${?KAFKA_MANAGER_LDAP_SSL}
+        basicAuthentication.username="admin"
+        basicAuthentication.username=${?KAFKA_MANAGER_USERNAME}
+        basicAuthentication.password="password"
+        basicAuthentication.password=${?KAFKA_MANAGER_PASSWORD}
+        basicAuthentication.realm="Kafka-Manager"
+        basicAuthentication.excluded=["/api/health"] # ping the health of your instance without authentification
+        kafka-manager.consumer.properties.file=${?CONSUMER_PROPERTIES_FILE}       
+    kind: ConfigMap
+    metadata:
+      name: kafka-manager
+    
 #####################
 
 
