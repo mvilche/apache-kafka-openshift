@@ -9,3 +9,4 @@ chgrp -R 0 /opt && \
 chmod -R g=u /opt 
 USER 1001
 EXPOSE 9092 9093
+WORKDIR /opt/kafka/bin

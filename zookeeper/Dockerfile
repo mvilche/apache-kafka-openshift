@@ -10,3 +10,4 @@ chgrp -R 0 /opt && \
 chmod -R g=u /opt
 USER 1001
 EXPOSE 2181 2888 3888
+WORKDIR /opt/zookeeper

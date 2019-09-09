@@ -31,6 +31,8 @@
         server.1=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
         server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
         server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+        autopurge.snapRetainCount=3
+        autopurge.purgeInterval=24        
       log4j.properties: |-
         zookeeper.root.logger=INFO, CONSOLE
         zookeeper.console.threshold=INFO
@@ -102,7 +104,7 @@
       wildcardPolicy: None        
 
 
-  - apiVersion: apps/v1
+  - apiVersion: apps/v1beta1
     kind: StatefulSet
     metadata:
       name: zookeeper
@@ -112,6 +114,13 @@
         matchLabels:
           app: zookeeper
       serviceName: zookeeper
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 1
+          memory: 2Gi         
       replicas: 3
       template:
         metadata:
@@ -148,7 +157,14 @@
                   if [ ! -f /opt/zookeeper-data/myid ]; then
                   echo $MY_ID >> /opt/zookeeper-data/myid
                   fi 
-              /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg                           
+              /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
+            resources:
+              requests:
+                cpu: 500m
+                memory: 1Gi
+              limits:
+                cpu: 1
+                memory: 2Gi                                        
             ports:
             - containerPort: 2181
               name: client
@@ -220,16 +236,16 @@
         app: kafka
     spec:
       ports:
-      - port: 9092
-        name: server1
       - port: 9093
-        name: server2        
+        name: server1 
+      - port: 9099
+        name: jmx   
       clusterIP: None
       selector:
         app: kafka
 
 
-  - apiVersion: apps/v1
+  - apiVersion: apps/v1beta1
     kind: StatefulSet
     metadata:
       name: kafka
@@ -255,7 +271,9 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: KAFKA_HEAP_OPTS
-                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                value: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${HOSTNAME##*-} -Dcom.sun.management.jmxremote.rmi.port=9099 -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+              - name: JMX_PORT
+                value: '9099'
             name: kafka
             image: kafka:2.3.0
             imagePullPolicy: Always
@@ -272,7 +290,7 @@
               --override auto.leader.rebalance.enable=true \
               --override background.threads=10 \
               --override compression.type=producer \
-              --override delete.topic.enable=false \
+              --override delete.topic.enable=true \
               --override leader.imbalance.check.interval.seconds=300 \
               --override leader.imbalance.per.broker.percentage=10 \
               --override log.flush.interval.messages=9223372036854775807 \
@@ -369,10 +387,10 @@
             #   initialDelaySeconds: 10
             #   timeoutSeconds: 5              
             ports:
-            - containerPort: 9092
-              name: server
             - containerPort: 9093
-              name: server2              
+              name: server1
+              containerPort: 9099
+              name: jmx              
             volumeMounts:
             - name: data
               mountPath: /opt/kafka-logs                                           
@@ -494,7 +512,13 @@
         deploymentconfig: kafka-manager
       strategy:
         activeDeadlineSeconds: 21600
-        resources: {}
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
         rollingParams:
           intervalSeconds: 1
           maxSurge: 25%
@@ -520,9 +544,47 @@
               image: "kafka-manager:latest"
               imagePullPolicy: Always
               name: kafka-manager
+              livenessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 60
+                periodSeconds: 20
+                successThreshold: 1
+                httpGet:
+                  port: 9000
+                  path: /
+                timeoutSeconds: 15
+              readinessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 60
+                periodSeconds: 20
+                successThreshold: 1
+                httpGet:
+                  port: 9000
+                  path: /
+                timeoutSeconds: 15   
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  cpu: 1
+                  memory: 1Gi                           
               ports:
                 - containerPort: 9000
                   protocol: TCP
+              lifecycle:
+                postStart:
+                  exec:
+                    command:
+                    - bash
+                    - "-c"
+                    - |
+                      OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
+                      while [  $OK != 200 ]; do
+                          echo "aun no activo"
+                          let OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
+                      done
+                      curl -d "name=openshift&zkHosts=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181&kafkaVersion=2.2.0&jmxEnabled=true&jmxUser=&jmxPass=&tuning.brokerViewUpdatePeriodSeconds=30&tuning.clusterManagerThreadPoolSize=2&tuning.clusterManagerThreadPoolQueueSize=100&tuning.kafkaCommandThreadPoolSize=2&tuning.kafkaCommandThreadPoolQueueSize=100&tuning.logkafkaCommandThreadPoolSize=2&tuning.logkafkaCommandThreadPoolQueueSize=100&tuning.logkafkaUpdatePeriodSeconds=30&tuning.partitionOffsetCacheTimeoutSecs=5&tuning.brokerViewThreadPoolSize=3&tuning.brokerViewThreadPoolQueueSize=1000&tuning.offsetCacheThreadPoolSize=3&tuning.offsetCacheThreadPoolQueueSize=1000&tuning.kafkaAdminClientThreadPoolSize=3&tuning.kafkaAdminClientThreadPoolQueueSize=1000&tuning.kafkaManagedOffsetMetadataCheckMillis=30000&tuning.kafkaManagedOffsetGroupCacheSize=1000000&tuning.kafkaManagedOffsetGroupExpireDays=7&securityProtocol=PLAINTEXT&saslMechanism=DEFAULT&jaasConfig=" -X POST http://localhost:9000/clusters || exit 0
               volumeMounts:
               - name: kafka-manager
                 mountPath: /opt/kafka-manager-2.0.0.2/conf
@@ -911,7 +973,6 @@
       name: kafka-manager
     
 #####################
-
 
 
 ################PARAMETROS
