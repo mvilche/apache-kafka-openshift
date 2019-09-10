@@ -26,7 +26,7 @@
 ############################## ZOOKEPEER
 
 
-  - apiVersion: v1
+  - apiVersion: v1 
     data:
       zoo.cfg: |-
         tickTime=2000
@@ -77,7 +77,7 @@
     metadata:
       name: zookeeper
       labels:
-        app: zookeeper
+        app: kafka-zookeeper-kafkamanager
     spec:
       ports:
       - port: 2888
@@ -90,24 +90,8 @@
         name: http               
       clusterIP: None
       selector:
-        app: zookeeper
-
-
-
-  - apiVersion: v1
-    kind: Route
-    metadata:
-      labels:
-        app: zookeeper
-      name: zookeeper
-    spec:
-      port:
-        targetPort: http
-      to:
-        kind: Service
-        name: zookeeper
-        weight: 100
-      wildcardPolicy: None        
+        app: kafka-zookeeper-kafkamanager
+     
 
 
   - apiVersion: apps/v1beta1
@@ -118,7 +102,7 @@
       podManagementPolicy: Parallel
       selector:
         matchLabels:
-          app: zookeeper
+          app: kafka-zookeeper-kafkamanager
       serviceName: zookeeper
       resources:
         requests:
@@ -133,7 +117,7 @@
           annotations:
             alpha.image.policy.openshift.io/resolve-names: '*'        
           labels:
-            app: zookeeper
+            app: kafka-zookeeper-kafkamanager
         spec:
           containers:
           - env:
@@ -239,7 +223,7 @@
     metadata:
       name: kafka
       labels:
-        app: kafka
+        app: kafka-zookeeper-kafkamanager
     spec:
       ports:
       - port: 9093
@@ -248,7 +232,7 @@
         name: jmx   
       clusterIP: None
       selector:
-        app: kafka
+        app: kafka-zookeeper-kafkamanager
 
 
   - apiVersion: apps/v1beta1
@@ -259,7 +243,7 @@
       podManagementPolicy: Parallel
       selector:
         matchLabels:
-          app: kafka
+          app: kafka-zookeeper-kafkamanager
       serviceName: kafka
       replicas: 3
       template:      
@@ -267,7 +251,7 @@
           annotations:
             alpha.image.policy.openshift.io/resolve-names: '*'
           labels:
-            app: kafka
+            app: kafka-zookeeper-kafkamanager
         spec:
           containers:
           - env:
@@ -277,7 +261,7 @@
                     apiVersion: v1
                     fieldPath: metadata.namespace
               - name: KAFKA_HEAP_OPTS
-                value: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${HOSTNAME##*-} -Dcom.sun.management.jmxremote.rmi.port=9099 -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
               - name: JMX_PORT
                 value: '9099'
             name: kafka
@@ -405,7 +389,7 @@
             ports:
             - containerPort: 9093
               name: server1
-              containerPort: 9099
+            - containerPort: 9099
               name: jmx              
             volumeMounts:
             - name: data
@@ -429,7 +413,7 @@
     kind: BuildConfig
     metadata:
       labels:
-        app: kafka
+        app: kafka-zookeeper-kafkamanager
         build: kafka
       name: kafka
     spec:
@@ -461,7 +445,7 @@
     kind: ImageStream
     metadata:
       labels:
-        app: kafka
+        app: kafka-zookeeper-kafkamanager
       name: kafka
     spec: {}
 
@@ -471,7 +455,7 @@
     kind: BuildConfig
     metadata:
       labels:
-        app: zookeeper
+        app: kafka-zookeeper-kafkamanager
         build: zookeeper
       name: zookeeper
     spec:
@@ -503,7 +487,7 @@
     kind: ImageStream
     metadata:
       labels:
-        app: zookeeper
+        app: kafka-zookeeper-kafkamanager
       name: zookeeper
     spec: {}    
 
@@ -518,13 +502,13 @@
     kind: DeploymentConfig
     metadata:
       labels:
-        app: "kafka-manager"
+        app: kafka-zookeeper-kafkamanager
       name: "kafka-manager"
     spec:
       replicas: 1
       revisionHistoryLimit: 10
       selector:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
         deploymentconfig: kafka-manager
       strategy:
         activeDeadlineSeconds: 21600
@@ -545,7 +529,7 @@
       template:
         metadata:
           labels:
-            app: kafka-manager
+            app: kafka-zookeeper-kafkamanager
             deploymentconfig: kafka-manager
         spec:
           containers:
@@ -631,7 +615,7 @@
     kind: Service
     metadata:
       labels:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
       name: kafka-manager
     spec:
       ports:
@@ -640,7 +624,7 @@
           protocol: TCP
           targetPort: 9000
       selector:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
         deploymentconfig: kafka-manager
       sessionAffinity: None
       type: ClusterIP
@@ -650,7 +634,7 @@
     kind: Route
     metadata:
       labels:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
       name: kafka-manager-http
     spec:
       port:
@@ -666,7 +650,7 @@
     kind: BuildConfig
     metadata:
       labels:
-        app: kafka-manager-sbt
+        app: kafka-zookeeper-kafkamanager
         build: kafka-manager-sbt
       name: kafka-manager-sbt
     spec:
@@ -697,7 +681,7 @@
     kind: ImageStream
     metadata:
       labels:
-        app: kafka-manager-sbt
+        app: kafka-zookeeper-kafkamanager
       name: kafka-manager-sbt
     spec: {}
 
@@ -706,7 +690,7 @@
     kind: BuildConfig
     metadata:
       labels:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
       name: kafka-manager
     spec:
       completionDeadlineSeconds: 1800
@@ -750,7 +734,7 @@
     kind: ImageStream
     metadata:
       labels:
-        app: kafka-manager
+        app: kafka-zookeeper-kafkamanager
       name: kafka-manager
     spec: {}
 
@@ -994,7 +978,7 @@
 ################PARAMETROS
   parameters:
     - name: NAMESPACE
-      displayName: Nombre del proyecto donde esta desplegando el template. Respete mayúsculas y minúsculas
+      displayName: Nombre del proyecto donde esta desplegando el template. Respete maysculas y minúsculas
       value: ''
       required: true
 
