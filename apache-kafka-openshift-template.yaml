@@ -13,6 +13,12 @@
         APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
         Martin Fabrizzio Vilche.
         https://github.com/mvilche.
+      openshift.io/provider-display-name: "Martin Fabrizzio Vilche" 
+      openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git" 
+      openshift.io/support-url: "https://github.com/mvilche/wildfly-s2i.git"
+  message: >-
+    Los servicios iniciarán en un par de minutos...    
+    Martin Fabrizzio Vilche        
 
   objects:
 
@@ -179,34 +185,34 @@
               mountPath: /opt/zookeeper-data
             - name: configmap
               mountPath: /opt/zookeeper/conf
-            # livenessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       OK=$(echo ruok | nc 127.0.0.1 2181)
-            #       if [ "$OK" == "imok" ]; then
-            #         exit 0
-            #       else
-            #         exit 1
-            #       fi                  
-            #   initialDelaySeconds: 90
-            #   timeoutSeconds: 5
-            # readinessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       echo hello | nc 127.0.0.1 2181
-            #       if [ "$?" == "0" ]; then
-            #         exit 0
-            #       else
-            #         exit 1
-            #       fi                  
-            #   initialDelaySeconds: 90
-            #   timeoutSeconds: 5   
+            livenessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  nc -z -v -w5 127.0.0.1 2181
+                  if [ "$?" == 0 ]; then
+                  exit 0
+                  else
+                  exit 1
+                  fi             
+              initialDelaySeconds: 90
+              timeoutSeconds: 5
+            readinessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  nc -z -v -w5 127.0.0.1 2181
+                  if [ "$?" == 0 ]; then
+                  exit 0
+                  else
+                  exit 1
+                  fi                 
+              initialDelaySeconds: 90
+              timeoutSeconds: 5   
           volumes:
           - name: configmap
             configMap:
@@ -218,7 +224,7 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 1Gi           
+              storage: 5Gi           
 
 
 ############################## FIN ZOOKEEPER
@@ -368,24 +374,34 @@
               --override replica.fetch.max.bytes=1048576 \
               --override replica.fetch.response.max.bytes=10485760 \
               --override reserved.broker.max.id=1000
-            # livenessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9093                
-            #   initialDelaySeconds: 10
-            #   timeoutSeconds: 5
-            # readinessProbe:
-            #   exec:
-            #     command:
-            #     - bash
-            #     - "-c"
-            #     - |
-            #       /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9093              
-            #   initialDelaySeconds: 10
-            #   timeoutSeconds: 5              
+            livenessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  nc -z -v -w5 127.0.0.1 9093
+                  if [ "$?" == 0 ]; then
+                  exit 0
+                  else
+                  exit 1
+                  fi                
+              initialDelaySeconds: 90
+              timeoutSeconds: 5
+            readinessProbe:
+              exec:
+                command:
+                - bash
+                - "-c"
+                - |
+                  nc -z -v -w5 127.0.0.1 9093
+                  if [ "$?" == 0 ]; then
+                  exit 0
+                  else
+                  exit 1
+                  fi                                
+              initialDelaySeconds: 90
+              timeoutSeconds: 5
             ports:
             - containerPort: 9093
               name: server1
@@ -401,7 +417,7 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 1Gi                 
+              storage: 5Gi                 
 
 
 #####################FIN KAFKA
@@ -978,7 +994,7 @@
 ################PARAMETROS
   parameters:
     - name: NAMESPACE
-      displayName: Nombre del proyecto donde esta desplegando el template
+      displayName: Nombre del proyecto donde esta desplegando el template. Respete mayúsculas y minúsculas
       value: ''
       required: true
 
