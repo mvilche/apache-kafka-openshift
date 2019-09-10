@@ -275,11 +275,11 @@
             - bash
             - "-c"
             - |
-
+              /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local ;\
               /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
               --override listeners=PLAINTEXT://:9093 \
               --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
-              --override log.dir=/opt/kafka-logs \
+              --override log.dirs=/opt/kafka-storage \
               --override auto.create.topics.enable=true \
               --override auto.leader.rebalance.enable=true \
               --override background.threads=10 \
@@ -310,7 +310,6 @@
               --override offsets.retention.minutes=1440 \
               --override offsets.topic.compression.codec=0 \
               --override offsets.topic.num.partitions=50 \
-              --override offsets.topic.replication.factor=3 \
               --override offsets.topic.segment.bytes=104857600 \
               --override queued.max.requests=500 \
               --override quota.consumer.default=9223372036854775807 \
@@ -397,7 +396,7 @@
               name: jmx
             volumeMounts:
             - name: data
-              mountPath: /opt/kafka-logs
+              mountPath: /opt/kafka-storage
       volumeClaimTemplates:
       - metadata:
           name: data

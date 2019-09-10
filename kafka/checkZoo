@@ -1,0 +1,3 @@
+#!/bin/bash
+zoo=$1
+until nc -z -v -w5 $zoo 2181; do echo waiting for zookeeper; sleep 5; done;
