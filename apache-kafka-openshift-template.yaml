@@ -13,12 +13,12 @@
         APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
         Martin Fabrizzio Vilche.
         https://github.com/mvilche.
-      openshift.io/provider-display-name: "Martin Fabrizzio Vilche" 
-      openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git" 
+      openshift.io/provider-display-name: "Martin Fabrizzio Vilche"
+      openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git"
       openshift.io/support-url: "https://github.com/mvilche/wildfly-s2i.git"
   message: >-
-    Los servicios iniciarán en un par de minutos...    
-    Martin Fabrizzio Vilche        
+    Los servicios iniciarán en un par de minutos...
+    Martin Fabrizzio Vilche
 
   objects:
 
@@ -26,7 +26,7 @@
 ############################## ZOOKEPEER
 
 
-  - apiVersion: v1 
+  - apiVersion: v1
     data:
       zoo.cfg: |-
         tickTime=2000
@@ -38,7 +38,7 @@
         server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
         server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
         autopurge.snapRetainCount=3
-        autopurge.purgeInterval=24        
+        autopurge.purgeInterval=24
       log4j.properties: |-
         zookeeper.root.logger=INFO, CONSOLE
         zookeeper.console.threshold=INFO
@@ -65,7 +65,7 @@
         log4j.appender.TRACEFILE.Threshold=TRACE
         log4j.appender.TRACEFILE.File=${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}
         log4j.appender.TRACEFILE.layout=org.apache.log4j.PatternLayout
-        log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n        
+        log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n
     kind: ConfigMap
     metadata:
       name: zookeeper
@@ -87,11 +87,11 @@
       - port: 2181
         name: client
       - port: 8080
-        name: http               
-      clusterIP: None
+        name: http
+      type: ClusterIP
       selector:
         app: kafka-zookeeper-kafkamanager
-     
+
 
 
   - apiVersion: apps/v1beta1
@@ -110,12 +110,12 @@
           memory: 1Gi
         limits:
           cpu: 1
-          memory: 2Gi         
+          memory: 2Gi
       replicas: 3
       template:
         metadata:
           annotations:
-            alpha.image.policy.openshift.io/resolve-names: '*'        
+            alpha.image.policy.openshift.io/resolve-names: '*'
           labels:
             app: kafka-zookeeper-kafkamanager
         spec:
@@ -135,7 +135,7 @@
             - bash
             - "-c"
             - |
-              export HOST=`hostname -s`    
+              export HOST=`hostname -s`
                   if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
                       NAME=${BASH_REMATCH[1]}
                       ORD=${BASH_REMATCH[2]}
@@ -146,7 +146,7 @@
                   MY_ID=$((ORD+1))
                   if [ ! -f /opt/zookeeper-data/myid ]; then
                   echo $MY_ID >> /opt/zookeeper-data/myid
-                  fi 
+                  fi
               /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
             resources:
               requests:
@@ -154,7 +154,7 @@
                 memory: 1Gi
               limits:
                 cpu: 1
-                memory: 2Gi                                        
+                memory: 2Gi
             ports:
             - containerPort: 2181
               name: client
@@ -163,7 +163,7 @@
             - containerPort: 3888
               name: leader-election
             - containerPort: 8080
-              name: http                          
+              name: http
             volumeMounts:
             - name: data
               mountPath: /opt/zookeeper-data
@@ -180,7 +180,7 @@
                   exit 0
                   else
                   exit 1
-                  fi             
+                  fi
               initialDelaySeconds: 90
               timeoutSeconds: 5
             readinessProbe:
@@ -194,13 +194,13 @@
                   exit 0
                   else
                   exit 1
-                  fi                 
+                  fi
               initialDelaySeconds: 90
-              timeoutSeconds: 5   
+              timeoutSeconds: 5
           volumes:
           - name: configmap
             configMap:
-              name: zookeeper                
+              name: zookeeper
       volumeClaimTemplates:
       - metadata:
           name: data
@@ -208,7 +208,7 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 5Gi           
+              storage: 5Gi
 
 
 ############################## FIN ZOOKEEPER
@@ -227,10 +227,10 @@
     spec:
       ports:
       - port: 9093
-        name: server1 
+        name: server1
       - port: 9099
-        name: jmx   
-      clusterIP: None
+        name: jmx
+      type: ClusterIP
       selector:
         app: kafka-zookeeper-kafkamanager
 
@@ -246,7 +246,7 @@
           app: kafka-zookeeper-kafkamanager
       serviceName: kafka
       replicas: 3
-      template:      
+      template:
         metadata:
           annotations:
             alpha.image.policy.openshift.io/resolve-names: '*'
@@ -254,7 +254,11 @@
             app: kafka-zookeeper-kafkamanager
         spec:
           containers:
-          - env:
+          - initContainers:
+            - name: wait-zookeeper
+              image: kafka:2.3.0
+              command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
+            env:
               - name: NAMESPACE
                 valueFrom:
                   fieldRef:
@@ -271,7 +275,7 @@
             - bash
             - "-c"
             - |
-              echo $NAMESPACE
+
               /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
               --override listeners=PLAINTEXT://:9093 \
               --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
@@ -369,7 +373,7 @@
                   exit 0
                   else
                   exit 1
-                  fi                
+                  fi
               initialDelaySeconds: 90
               timeoutSeconds: 5
             readinessProbe:
@@ -383,17 +387,17 @@
                   exit 0
                   else
                   exit 1
-                  fi                                
+                  fi
               initialDelaySeconds: 90
               timeoutSeconds: 5
             ports:
             - containerPort: 9093
               name: server1
             - containerPort: 9099
-              name: jmx              
+              name: jmx
             volumeMounts:
             - name: data
-              mountPath: /opt/kafka-logs                                           
+              mountPath: /opt/kafka-logs
       volumeClaimTemplates:
       - metadata:
           name: data
@@ -401,7 +405,7 @@
           accessModes: [ "ReadWriteOnce" ]
           resources:
             requests:
-              storage: 5Gi                 
+              storage: 5Gi
 
 
 #####################FIN KAFKA
@@ -489,7 +493,7 @@
       labels:
         app: kafka-zookeeper-kafkamanager
       name: zookeeper
-    spec: {}    
+    spec: {}
 
 ########################
 
@@ -533,14 +537,18 @@
             deploymentconfig: kafka-manager
         spec:
           containers:
-            - env:
+            - initContainers:
+              - name: wait-zookeeper
+                image: kafka:2.3.0
+                command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
+              env:
                 - name: NAMESPACE
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: JAVA_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true                                  
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
               image: "kafka-manager:latest"
               imagePullPolicy: Always
               name: kafka-manager
@@ -561,14 +569,14 @@
                 httpGet:
                   port: 9000
                   path: /
-                timeoutSeconds: 15   
+                timeoutSeconds: 15
               resources:
                 requests:
                   cpu: 500m
                   memory: 1Gi
                 limits:
                   cpu: 1
-                  memory: 1Gi                           
+                  memory: 1Gi
               ports:
                 - containerPort: 9000
                   protocol: TCP
@@ -594,7 +602,7 @@
           volumes:
           - name: kafka-manager
             configMap:
-              name: kafka-manager          
+              name: kafka-manager
           restartPolicy: Always
           schedulerName: default-scheduler
           terminationGracePeriodSeconds: 30
@@ -811,7 +819,7 @@
         # Unversioned Assets
         GET    /assets/*file                                        controllers.Assets.at(path="/public", file)
         # Ping / Health Check
-        GET    /api/health                                          controllers.ApiHealth.ping      
+        GET    /api/health                                          controllers.ApiHealth.ping
       logger.xml: |-
         <configuration>
             <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -853,7 +861,7 @@
         /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ^C
         /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ls
         application.conf     consumer.properties  logback.xml          logger.xml           routes
-        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # cat logger.xml 
+        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # cat logger.xml
         <configuration>
           <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
           <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -922,7 +930,7 @@
       consumer.properties: |-
         security.protocol=PLAINTEXT
         key.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
-        value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer      
+        value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
       application.conf: |-
         play.crypto.secret="^<csmm5Fx4d=r2HEX8pelM3iBkFVv?k[mc;IZE<_Qoq8EkX_/7@Zt6dP05Pzea3U"
         play.crypto.secret=${?APPLICATION_SECRET}
@@ -967,11 +975,11 @@
         basicAuthentication.password=${?KAFKA_MANAGER_PASSWORD}
         basicAuthentication.realm="Kafka-Manager"
         basicAuthentication.excluded=["/api/health"] # ping the health of your instance without authentification
-        kafka-manager.consumer.properties.file=${?CONSUMER_PROPERTIES_FILE}       
+        kafka-manager.consumer.properties.file=${?CONSUMER_PROPERTIES_FILE}
     kind: ConfigMap
     metadata:
       name: kafka-manager
-    
+
 #####################
 
 
