@@ -5,7 +5,7 @@
 
 ### Details:
 
-- 3 Zookeeper Cluster 3
+- 3 Zookeeper Cluster
 - 3 Apache Kafka broker
 - 1 Apache Kafka Manager Dashboard
 
