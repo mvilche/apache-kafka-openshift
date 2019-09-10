@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
 
-# Detalles:
+### Details:
 
 - 3 Zookeeper Cluster 3
 - 3 Apache Kafka broker
