@@ -275,7 +275,7 @@
             - bash
             - "-c"
             - |
-              /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local ;\
+              /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local ;\
               /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
               --override listeners=PLAINTEXT://:9093 \
               --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
