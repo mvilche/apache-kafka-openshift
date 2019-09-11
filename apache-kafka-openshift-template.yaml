@@ -1,523 +1,109 @@
-    ##comienzo Template
-  apiVersion: v1
-  kind: Template
-  metadata:
-    name: kafka-zookeeper-openshift-mvilche
-    labels:
-      template: kafka-zookeeper-openshift-mvilche
-      autor: "Martin_Fabrizzio_Vilche"
-    annotations:
-      openshift.io/display-name: "kafka-zookeeper-openshift-mvilche"
-      iconClass: "icon-github"
-      description: >-
-        APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
-        Martin Fabrizzio Vilche.
-        https://github.com/mvilche.
-      openshift.io/provider-display-name: "Martin Fabrizzio Vilche"
-      openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git"
-      openshift.io/support-url: "https://github.com/mvilche/wildfly-s2i.git"
-  message: >-
-    Los servicios iniciarán en un par de minutos...
-    Martin Fabrizzio Vilche
-
-  objects:
-
-
-############################## ZOOKEPEER
-
-
-  - apiVersion: v1
-    data:
-      zoo.cfg: |-
-        tickTime=2000
-        dataDir=/opt/zookeeper-data
-        clientPort=2181
-        initLimit=5
-        syncLimit=2
-        server.1=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
-        server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
-        server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
-        autopurge.snapRetainCount=3
-        autopurge.purgeInterval=24
-      log4j.properties: |-
-        zookeeper.root.logger=INFO, CONSOLE
-        zookeeper.console.threshold=INFO
-        zookeeper.log.dir=.
-        zookeeper.log.file=zookeeper.log
-        zookeeper.log.threshold=INFO
-        zookeeper.log.maxfilesize=256MB
-        zookeeper.log.maxbackupindex=20
-        zookeeper.tracelog.dir=${zookeeper.log.dir}
-        zookeeper.tracelog.file=zookeeper_trace.log
-        log4j.rootLogger=${zookeeper.root.logger}
-        log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
-        log4j.appender.CONSOLE.Threshold=${zookeeper.console.threshold}
-        log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
-        log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
-        log4j.appender.ROLLINGFILE=org.apache.log4j.RollingFileAppender
-        log4j.appender.ROLLINGFILE.Threshold=${zookeeper.log.threshold}
-        log4j.appender.ROLLINGFILE.File=${zookeeper.log.dir}/${zookeeper.log.file}
-        log4j.appender.ROLLINGFILE.MaxFileSize=${zookeeper.log.maxfilesize}
-        log4j.appender.ROLLINGFILE.MaxBackupIndex=${zookeeper.log.maxbackupindex}
-        log4j.appender.ROLLINGFILE.layout=org.apache.log4j.PatternLayout
-        log4j.appender.ROLLINGFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
-        log4j.appender.TRACEFILE=org.apache.log4j.FileAppender
-        log4j.appender.TRACEFILE.Threshold=TRACE
-        log4j.appender.TRACEFILE.File=${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}
-        log4j.appender.TRACEFILE.layout=org.apache.log4j.PatternLayout
-        log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n
-    kind: ConfigMap
+      ##comienzo Template
+    apiVersion: v1
+    kind: Template
     metadata:
-      name: zookeeper
-
-
-
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      name: zookeeper
+      name: kafka-zookeeper-openshift-mvilche
       labels:
-        app: kafka-zookeeper-kafkamanager
-    spec:
-      ports:
-      - port: 2888
-        name: server
-      - port: 3888
-        name: leader-election
-      - port: 2181
-        name: client
-      - port: 8080
-        name: http
-      type: ClusterIP
-      selector:
-        app: kafka-zookeeper-kafkamanager
+        template: kafka-zookeeper-openshift-mvilche
+        autor: "Martin_Fabrizzio_Vilche"
+      annotations:
+        openshift.io/display-name: "kafka-zookeeper-openshift-mvilche"
+        iconClass: "icon-github"
+        description: >-
+          APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
+          Martin Fabrizzio Vilche.
+          https://github.com/mvilche.
+        openshift.io/provider-display-name: "Martin Fabrizzio Vilche"
+        openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git"
+        openshift.io/support-url: "https://github.com/mvilche/wildfly-s2i.git"
+    message: >-
+      Los servicios iniciarán en un par de minutos...
+      Martin Fabrizzio Vilche
+
+    objects:
+
+
+  ############################## ZOOKEPEER
+
+
+    - apiVersion: v1
+      data:
+        zoo.cfg: |-
+          tickTime=2000
+          dataDir=/opt/zookeeper-data
+          clientPort=2181
+          initLimit=5
+          syncLimit=2
+          server.1=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+          server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+          server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
+          autopurge.snapRetainCount=3
+          autopurge.purgeInterval=24
+        log4j.properties: |-
+          zookeeper.root.logger=INFO, CONSOLE
+          zookeeper.console.threshold=INFO
+          zookeeper.log.dir=.
+          zookeeper.log.file=zookeeper.log
+          zookeeper.log.threshold=INFO
+          zookeeper.log.maxfilesize=256MB
+          zookeeper.log.maxbackupindex=20
+          zookeeper.tracelog.dir=${zookeeper.log.dir}
+          zookeeper.tracelog.file=zookeeper_trace.log
+          log4j.rootLogger=${zookeeper.root.logger}
+          log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+          log4j.appender.CONSOLE.Threshold=${zookeeper.console.threshold}
+          log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+          log4j.appender.ROLLINGFILE=org.apache.log4j.RollingFileAppender
+          log4j.appender.ROLLINGFILE.Threshold=${zookeeper.log.threshold}
+          log4j.appender.ROLLINGFILE.File=${zookeeper.log.dir}/${zookeeper.log.file}
+          log4j.appender.ROLLINGFILE.MaxFileSize=${zookeeper.log.maxfilesize}
+          log4j.appender.ROLLINGFILE.MaxBackupIndex=${zookeeper.log.maxbackupindex}
+          log4j.appender.ROLLINGFILE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.ROLLINGFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n
+          log4j.appender.TRACEFILE=org.apache.log4j.FileAppender
+          log4j.appender.TRACEFILE.Threshold=TRACE
+          log4j.appender.TRACEFILE.File=${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}
+          log4j.appender.TRACEFILE.layout=org.apache.log4j.PatternLayout
+          log4j.appender.TRACEFILE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L][%x] - %m%n
+      kind: ConfigMap
+      metadata:
+        name: zookeeper
 
 
 
-  - apiVersion: apps/v1beta1
-    kind: StatefulSet
-    metadata:
-      name: zookeeper
-    spec:
-      podManagementPolicy: Parallel
-      selector:
-        matchLabels:
+    - apiVersion: v1
+      kind: Service
+      metadata:
+        name: zookeeper
+        labels:
           app: kafka-zookeeper-kafkamanager
-      serviceName: zookeeper
-      resources:
-        requests:
-          cpu: 500m
-          memory: 1Gi
-        limits:
-          cpu: 1
-          memory: 2Gi
-      replicas: 3
-      template:
-        metadata:
-          annotations:
-            alpha.image.policy.openshift.io/resolve-names: '*'
-          labels:
+      spec:
+        ports:
+        - port: 2888
+          name: server
+        - port: 3888
+          name: leader-election
+        - port: 2181
+          name: client
+        - port: 8080
+          name: http
+        clusterIP: None
+        selector:
+          service: zookeeper
+
+
+
+    - apiVersion: apps/v1beta1
+      kind: StatefulSet
+      metadata:
+        name: zookeeper
+      spec:
+        podManagementPolicy: Parallel
+        selector:
+          matchLabels:
             app: kafka-zookeeper-kafkamanager
-        spec:
-          containers:
-          - env:
-              - name: NAMESPACE
-                valueFrom:
-                  fieldRef:
-                    apiVersion: v1
-                    fieldPath: metadata.namespace
-              - name: JVMFLAGS
-                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
-            name: zookeeper
-            image: zookeeper:3.5.5
-            imagePullPolicy: Always
-            command:
-            - bash
-            - "-c"
-            - |
-              export HOST=`hostname -s`
-                  if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
-                      NAME=${BASH_REMATCH[1]}
-                      ORD=${BASH_REMATCH[2]}
-                  else
-                      echo "ERROR OBTENIENDO HOSTNAME $HOST"
-                      exit 1
-                  fi
-                  MY_ID=$((ORD+1))
-                  if [ ! -f /opt/zookeeper-data/myid ]; then
-                  echo $MY_ID >> /opt/zookeeper-data/myid
-                  fi
-              /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
-            resources:
-              requests:
-                cpu: 500m
-                memory: 1Gi
-              limits:
-                cpu: 1
-                memory: 2Gi
-            ports:
-            - containerPort: 2181
-              name: client
-            - containerPort: 2888
-              name: server
-            - containerPort: 3888
-              name: leader-election
-            - containerPort: 8080
-              name: http
-            volumeMounts:
-            - name: data
-              mountPath: /opt/zookeeper-data
-            - name: configmap
-              mountPath: /opt/zookeeper/conf
-            livenessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  nc -z -v -w5 127.0.0.1 2181
-                  if [ "$?" == 0 ]; then
-                  exit 0
-                  else
-                  exit 1
-                  fi
-              initialDelaySeconds: 90
-              timeoutSeconds: 5
-            readinessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  nc -z -v -w5 127.0.0.1 2181
-                  if [ "$?" == 0 ]; then
-                  exit 0
-                  else
-                  exit 1
-                  fi
-              initialDelaySeconds: 90
-              timeoutSeconds: 5
-          volumes:
-          - name: configmap
-            configMap:
-              name: zookeeper
-      volumeClaimTemplates:
-      - metadata:
-          name: data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          resources:
-            requests:
-              storage: 5Gi
-
-
-############################## FIN ZOOKEEPER
-
-
-
-##############################KAFKA
-
-
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      name: kafka
-      labels:
-        app: kafka-zookeeper-kafkamanager
-    spec:
-      ports:
-      - port: 9093
-        name: server1
-      - port: 9099
-        name: jmx
-      type: ClusterIP
-      selector:
-        app: kafka-zookeeper-kafkamanager
-
-
-  - apiVersion: apps/v1beta1
-    kind: StatefulSet
-    metadata:
-      name: kafka
-    spec:
-      podManagementPolicy: Parallel
-      selector:
-        matchLabels:
-          app: kafka-zookeeper-kafkamanager
-      serviceName: kafka
-      replicas: 3
-      template:
-        metadata:
-          annotations:
-            alpha.image.policy.openshift.io/resolve-names: '*'
-          labels:
-            app: kafka-zookeeper-kafkamanager
-        spec:
-          containers:
-          - initContainers:
-            - name: wait-zookeeper
-              image: kafka:2.3.0
-              command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
-            env:
-              - name: NAMESPACE
-                valueFrom:
-                  fieldRef:
-                    apiVersion: v1
-                    fieldPath: metadata.namespace
-              - name: KAFKA_HEAP_OPTS
-                value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
-              - name: JMX_PORT
-                value: '9099'
-            name: kafka
-            image: kafka:2.3.0
-            imagePullPolicy: Always
-            command:
-            - bash
-            - "-c"
-            - |
-              /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local
-              /opt/checkZoo zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local
-              /opt/checkZoo zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local
-              /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
-              --override listeners=PLAINTEXT://:9093 \
-              --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
-              --override log.dirs=/opt/kafka-storage \
-              --override auto.create.topics.enable=true \
-              --override auto.leader.rebalance.enable=true \
-              --override background.threads=10 \
-              --override compression.type=producer \
-              --override delete.topic.enable=true \
-              --override leader.imbalance.check.interval.seconds=300 \
-              --override leader.imbalance.per.broker.percentage=10 \
-              --override log.flush.interval.messages=9223372036854775807 \
-              --override log.flush.offset.checkpoint.interval.ms=60000 \
-              --override log.flush.scheduler.interval.ms=9223372036854775807 \
-              --override log.retention.bytes=300 \
-              --override log.retention.hours=168 \
-              --override log.roll.hours=168 \
-              --override log.roll.jitter.hours=0 \
-              --override log.segment.bytes=1073741824 \
-              --override log.segment.delete.delay.ms=60000 \
-              --override message.max.bytes=1000012 \
-              --override min.insync.replicas=1 \
-              --override num.io.threads=8 \
-              --override num.network.threads=3 \
-              --override num.recovery.threads.per.data.dir=1 \
-              --override num.replica.fetchers=1 \
-              --override offset.metadata.max.bytes=4096 \
-              --override offsets.commit.required.acks=-1 \
-              --override offsets.commit.timeout.ms=5000 \
-              --override offsets.load.buffer.size=5242880 \
-              --override offsets.retention.check.interval.ms=600000 \
-              --override offsets.retention.minutes=1440 \
-              --override offsets.topic.compression.codec=0 \
-              --override offsets.topic.num.partitions=50 \
-              --override offsets.topic.segment.bytes=104857600 \
-              --override offsets.topic.replication.factor=3 \
-              --override queued.max.requests=500 \
-              --override quota.consumer.default=9223372036854775807 \
-              --override quota.producer.default=9223372036854775807 \
-              --override replica.fetch.min.bytes=1 \
-              --override replica.fetch.wait.max.ms=500 \
-              --override replica.high.watermark.checkpoint.interval.ms=5000 \
-              --override replica.lag.time.max.ms=10000 \
-              --override replica.socket.receive.buffer.bytes=65536 \
-              --override replica.socket.timeout.ms=30000 \
-              --override request.timeout.ms=30000 \
-              --override socket.receive.buffer.bytes=102400 \
-              --override socket.request.max.bytes=104857600 \
-              --override socket.send.buffer.bytes=102400 \
-              --override unclean.leader.election.enable=true \
-              --override zookeeper.session.timeout.ms=6000 \
-              --override zookeeper.set.acl=false \
-              --override broker.id.generation.enable=true \
-              --override connections.max.idle.ms=600000 \
-              --override controlled.shutdown.enable=true \
-              --override controlled.shutdown.max.retries=3 \
-              --override controlled.shutdown.retry.backoff.ms=5000 \
-              --override controller.socket.timeout.ms=30000 \
-              --override default.replication.factor=1 \
-              --override fetch.purgatory.purge.interval.requests=1000 \
-              --override group.max.session.timeout.ms=300000 \
-              --override group.min.session.timeout.ms=6000 \
-              --override log.cleaner.backoff.ms=15000 \
-              --override log.cleaner.dedupe.buffer.size=134217728 \
-              --override log.cleaner.delete.retention.ms=86400000 \
-              --override log.cleaner.enable=true \
-              --override log.cleaner.io.buffer.load.factor=0.9 \
-              --override log.cleaner.io.buffer.size=524288 \
-              --override log.cleaner.io.max.bytes.per.second=1.7976931348623157E308 \
-              --override log.cleaner.min.cleanable.ratio=0.5 \
-              --override log.cleaner.min.compaction.lag.ms=0 \
-              --override log.cleaner.threads=1 \
-              --override log.cleanup.policy=delete \
-              --override log.index.interval.bytes=4096 \
-              --override log.index.size.max.bytes=10485760 \
-              --override log.message.timestamp.difference.max.ms=9223372036854775807 \
-              --override log.message.timestamp.type=CreateTime \
-              --override log.preallocate=false \
-              --override log.retention.check.interval.ms=300000 \
-              --override max.connections.per.ip=2147483647 \
-              --override num.partitions=1 \
-              --override producer.purgatory.purge.interval.requests=1000 \
-              --override replica.fetch.backoff.ms=1000 \
-              --override replica.fetch.max.bytes=1048576 \
-              --override replica.fetch.response.max.bytes=10485760 \
-              --override reserved.broker.max.id=1000
-            livenessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  nc -z -v -w5 127.0.0.1 9093
-                  if [ "$?" == 0 ]; then
-                  exit 0
-                  else
-                  exit 1
-                  fi
-              initialDelaySeconds: 90
-              timeoutSeconds: 5
-            readinessProbe:
-              exec:
-                command:
-                - bash
-                - "-c"
-                - |
-                  nc -z -v -w5 127.0.0.1 9093
-                  if [ "$?" == 0 ]; then
-                  exit 0
-                  else
-                  exit 1
-                  fi
-              initialDelaySeconds: 90
-              timeoutSeconds: 5
-            ports:
-            - containerPort: 9093
-              name: server1
-            - containerPort: 9099
-              name: jmx
-            volumeMounts:
-            - name: data
-              mountPath: /opt/kafka-storage
-      volumeClaimTemplates:
-      - metadata:
-          name: data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          resources:
-            requests:
-              storage: 5Gi
-
-
-#####################FIN KAFKA
-
-
-###################BUILDCONFIGS
-
-  - apiVersion: v1
-    kind: BuildConfig
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-        build: kafka
-      name: kafka
-    spec:
-      failedBuildsHistoryLimit: 5
-      nodeSelector: null
-      output:
-        to:
-          kind: ImageStreamTag
-          name: 'kafka:2.3.0'
-      postCommit: {}
-      resources: {}
-      runPolicy: Serial
-      source:
-        contextDir: kafka
-        git:
-          ref: master
-          uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
-        type: Git
-      strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-        type: Docker
-      successfulBuildsHistoryLimit: 5
-      triggers:
-        - type: ConfigChange
-
-
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka
-    spec: {}
-
-
-
-  - apiVersion: v1
-    kind: BuildConfig
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-        build: zookeeper
-      name: zookeeper
-    spec:
-      failedBuildsHistoryLimit: 5
-      nodeSelector: null
-      output:
-        to:
-          kind: ImageStreamTag
-          name: 'zookeeper:3.5.5'
-      postCommit: {}
-      resources: {}
-      runPolicy: Serial
-      source:
-        contextDir: zookeeper
-        git:
-          ref: master
-          uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
-        type: Git
-      strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-        type: Docker
-      successfulBuildsHistoryLimit: 5
-      triggers:
-        - type: ConfigChange
-
-
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: zookeeper
-    spec: {}
-
-########################
-
-
-
-##################### KAFKA MANAGER
-
-
-  - apiVersion: v1
-    kind: DeploymentConfig
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: "kafka-manager"
-    spec:
-      replicas: 1
-      revisionHistoryLimit: 10
-      selector:
-        app: kafka-zookeeper-kafkamanager
-        deploymentconfig: kafka-manager
-      strategy:
-        activeDeadlineSeconds: 21600
+        serviceName: zookeeper
         resources:
           requests:
             cpu: 500m
@@ -525,471 +111,876 @@
           limits:
             cpu: 1
             memory: 2Gi
-        rollingParams:
-          intervalSeconds: 1
-          maxSurge: 25%
-          maxUnavailable: 25%
-          timeoutSeconds: 600
-          updatePeriodSeconds: 1
-        type: Rolling
-      template:
-        metadata:
-          labels:
-            app: kafka-zookeeper-kafkamanager
-            deploymentconfig: kafka-manager
-        spec:
-          containers:
-            - initContainers:
-              - name: wait-zookeeper
-                image: kafka:2.3.0
-                command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
-              env:
+        replicas: 3
+        template:
+          metadata:
+            annotations:
+              alpha.image.policy.openshift.io/resolve-names: '*'
+            labels:
+              app: kafka-zookeeper-kafkamanager
+              service: zookeeper
+          spec:
+            containers:
+            - env:
                 - name: NAMESPACE
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: metadata.namespace
-                - name: JAVA_OPTS
+                - name: JVMFLAGS
                   value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
-              image: "kafka-manager:latest"
+              name: zookeeper
+              image: zookeeper:3.5.5
               imagePullPolicy: Always
-              name: kafka-manager
-              livenessProbe:
-                failureThreshold: 3
-                initialDelaySeconds: 60
-                periodSeconds: 20
-                successThreshold: 1
-                httpGet:
-                  port: 9000
-                  path: /
-                timeoutSeconds: 15
-              readinessProbe:
-                failureThreshold: 3
-                initialDelaySeconds: 60
-                periodSeconds: 20
-                successThreshold: 1
-                httpGet:
-                  port: 9000
-                  path: /
-                timeoutSeconds: 15
+              command:
+              - bash
+              - "-c"
+              - |
+                export HOST=`hostname -s`
+                    if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
+                        NAME=${BASH_REMATCH[1]}
+                        ORD=${BASH_REMATCH[2]}
+                    else
+                        echo "ERROR OBTENIENDO HOSTNAME $HOST"
+                        exit 1
+                    fi
+                    MY_ID=$((ORD+1))
+                    if [ ! -f /opt/zookeeper-data/myid ]; then
+                    echo $MY_ID >> /opt/zookeeper-data/myid
+                    fi
+                /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
               resources:
                 requests:
                   cpu: 500m
                   memory: 1Gi
                 limits:
                   cpu: 1
-                  memory: 1Gi
+                  memory: 2Gi
               ports:
-                - containerPort: 9000
-                  protocol: TCP
-              lifecycle:
-                postStart:
-                  exec:
-                    command:
-                    - bash
-                    - "-c"
-                    - |
-                      OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
-                      while [  $OK != 200 ]; do
-                          echo "aun no activo"
-                          let OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
-                      done
-                      curl -d "name=openshift&zkHosts=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181&kafkaVersion=2.2.0&jmxEnabled=true&jmxUser=&jmxPass=&tuning.brokerViewUpdatePeriodSeconds=30&tuning.clusterManagerThreadPoolSize=2&tuning.clusterManagerThreadPoolQueueSize=100&tuning.kafkaCommandThreadPoolSize=2&tuning.kafkaCommandThreadPoolQueueSize=100&tuning.logkafkaCommandThreadPoolSize=2&tuning.logkafkaCommandThreadPoolQueueSize=100&tuning.logkafkaUpdatePeriodSeconds=30&tuning.partitionOffsetCacheTimeoutSecs=5&tuning.brokerViewThreadPoolSize=3&tuning.brokerViewThreadPoolQueueSize=1000&tuning.offsetCacheThreadPoolSize=3&tuning.offsetCacheThreadPoolQueueSize=1000&tuning.kafkaAdminClientThreadPoolSize=3&tuning.kafkaAdminClientThreadPoolQueueSize=1000&tuning.kafkaManagedOffsetMetadataCheckMillis=30000&tuning.kafkaManagedOffsetGroupCacheSize=1000000&tuning.kafkaManagedOffsetGroupExpireDays=7&securityProtocol=PLAINTEXT&saslMechanism=DEFAULT&jaasConfig=" -X POST http://localhost:9000/clusters || exit 0
+              - containerPort: 2181
+                name: client
+              - containerPort: 2888
+                name: server
+              - containerPort: 3888
+                name: leader-election
+              - containerPort: 8080
+                name: http
               volumeMounts:
-              - name: kafka-manager
-                mountPath: /opt/kafka-manager-2.0.0.2/conf
-                terminationMessagePath: /dev/termination-log
-                terminationMessagePolicy: File
-          dnsPolicy: ClusterFirst
-          volumes:
-          - name: kafka-manager
-            configMap:
-              name: kafka-manager
-          restartPolicy: Always
-          schedulerName: default-scheduler
-          terminationGracePeriodSeconds: 30
-      test: false
-      triggers:
-        - type: ConfigChange
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-              - kafka-manager
-            from:
-              kind: ImageStreamTag
-              name: "kafka-manager:latest"
-          type: ImageChange
+              - name: data
+                mountPath: /opt/zookeeper-data
+              - name: configmap
+                mountPath: /opt/zookeeper/conf
+              livenessProbe:
+                exec:
+                  command:
+                  - bash
+                  - "-c"
+                  - |
+                    nc -z -v -w5 127.0.0.1 2181
+                    if [ "$?" == 0 ]; then
+                    exit 0
+                    else
+                    exit 1
+                    fi
+                initialDelaySeconds: 90
+                timeoutSeconds: 5
+              readinessProbe:
+                exec:
+                  command:
+                  - bash
+                  - "-c"
+                  - |
+                    nc -z -v -w5 127.0.0.1 2181
+                    if [ "$?" == 0 ]; then
+                    exit 0
+                    else
+                    exit 1
+                    fi
+                initialDelaySeconds: 30
+                timeoutSeconds: 15
+            volumes:
+            - name: configmap
+              configMap:
+                name: zookeeper
+        volumeClaimTemplates:
+        - metadata:
+            name: data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: 5Gi
 
 
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka-manager
-    spec:
-      ports:
-        - name: http
-          port: 9000
-          protocol: TCP
-          targetPort: 9000
-      selector:
-        app: kafka-zookeeper-kafkamanager
-        deploymentconfig: kafka-manager
-      sessionAffinity: None
-      type: ClusterIP
+  ############################## FIN ZOOKEEPER
 
 
-  - apiVersion: v1
-    kind: Route
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka-manager-http
-    spec:
-      port:
-        targetPort: http
-      to:
-        kind: Service
-        name: kafka-manager
-        weight: 100
-      wildcardPolicy: None
+
+  ##############################KAFKA
 
 
-  - apiVersion: v1
-    kind: BuildConfig
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-        build: kafka-manager-sbt
-      name: kafka-manager-sbt
-    spec:
-      failedBuildsHistoryLimit: 5
-      nodeSelector: null
-      output:
-        to:
-          kind: ImageStreamTag
-          name: 'kafka-manager-sbt:latest'
-      postCommit: {}
-      resources: {}
-      runPolicy: Serial
-      source:
-        contextDir: kafka-manager
-        git:
-          ref: master
-          uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
-        type: Git
-      strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-        type: Docker
-      successfulBuildsHistoryLimit: 5
-      triggers:
-        - type: ConfigChange
-
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka-manager-sbt
-    spec: {}
+    - apiVersion: v1
+      kind: Service
+      metadata:
+        name: kafka
+        labels:
+          app: kafka-zookeeper-kafkamanager
+      spec:
+        ports:
+        - port: 9092
+          name: server1
+        clusterIP: None
+        selector:
+          service: kafka
 
 
-  - apiVersion: v1
-    kind: BuildConfig
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka-manager
-    spec:
-      completionDeadlineSeconds: 1800
-      output:
-        to:
-          kind: ImageStreamTag
-          name: kafka-manager:latest
-      source:
-        type: Dockerfile
-        dockerfile: |-
-                FROM alpine:3.10
-                USER root
-                RUN apk add --update --no-cache shadow busybox-suid openjdk8 bash curl && mkdir -p /opt
-                COPY kafka-manager-2.0.0.2 /opt/kafka-manager-2.0.0.2
-                RUN adduser -u 1001 -D -h /opt/kafka-manager-2.0.0.2 app && usermod -aG 0 app && \
-                chown 1001:0 -R /opt && \
-                chgrp -R 0 /opt && \
-                chmod +x /opt/kafka-manager-2.0.0.2/bin/* && \
-                chmod -R g=u /opt
-                USER 1001
-                ENV HOME /opt/kafka-manager-2.0.0.2
-                CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager", "-Dconfig.file=/opt/kafka-manager-2.0.0.2/conf/application.conf", "-Dapplication.home=/opt/kafka-manager-2.0.0.2"]
-        images:
-        - from:
+    - apiVersion: apps/v1beta1
+      kind: StatefulSet
+      metadata:
+        name: kafka
+      spec:
+        serviceName: kafka
+        replicas: 3
+        template:
+          metadata:
+            annotations:
+              alpha.image.policy.openshift.io/resolve-names: '*'
+            labels:
+              app: kafka-zookeeper-kafkamanager
+              service: kafka
+          spec:
+            containers:
+            - env:
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: KAFKA_HEAP_OPTS
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+              name: kafka
+              image: kafka:2.3.0
+              imagePullPolicy: Always
+              command:
+              - bash
+              - "-c"
+              - |
+                rm -rf /opt/kafka-storage/.lock
+                /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local
+                /opt/checkZoo zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local
+                /opt/checkZoo zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local
+                /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
+                --override listeners=PLAINTEXT://:9092 \
+                --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
+                --override log.dirs=/opt/kafka-storage \
+                --override auto.create.topics.enable=true \
+                --override auto.leader.rebalance.enable=true \
+                --override background.threads=10 \
+                --override compression.type=producer \
+                --override delete.topic.enable=true \
+                --override leader.imbalance.check.interval.seconds=300 \
+                --override leader.imbalance.per.broker.percentage=10 \
+                --override log.flush.interval.messages=9223372036854775807 \
+                --override log.flush.offset.checkpoint.interval.ms=60000 \
+                --override log.flush.scheduler.interval.ms=9223372036854775807 \
+                --override log.retention.bytes=-1 \
+                --override log.retention.hours=168 \
+                --override log.roll.hours=168 \
+                --override log.roll.jitter.hours=0 \
+                --override log.segment.bytes=1073741824 \
+                --override log.segment.delete.delay.ms=60000 \
+                --override message.max.bytes=1000012 \
+                --override min.insync.replicas=1 \
+                --override num.io.threads=8 \
+                --override num.network.threads=3 \
+                --override num.recovery.threads.per.data.dir=1 \
+                --override num.replica.fetchers=1 \
+                --override offset.metadata.max.bytes=4096 \
+                --override offsets.commit.required.acks=-1 \
+                --override offsets.commit.timeout.ms=5000 \
+                --override offsets.load.buffer.size=5242880 \
+                --override offsets.retention.check.interval.ms=600000 \
+                --override offsets.retention.minutes=1440 \
+                --override offsets.topic.compression.codec=0 \
+                --override offsets.topic.num.partitions=50 \
+                --override offsets.topic.replication.factor=3 \
+                --override offsets.topic.segment.bytes=104857600 \
+                --override queued.max.requests=500 \
+                --override quota.consumer.default=9223372036854775807 \
+                --override quota.producer.default=9223372036854775807 \
+                --override replica.fetch.min.bytes=1 \
+                --override replica.fetch.wait.max.ms=500 \
+                --override replica.high.watermark.checkpoint.interval.ms=5000 \
+                --override replica.lag.time.max.ms=10000 \
+                --override replica.socket.receive.buffer.bytes=65536 \
+                --override replica.socket.timeout.ms=30000 \
+                --override request.timeout.ms=30000 \
+                --override socket.receive.buffer.bytes=102400 \
+                --override socket.request.max.bytes=104857600 \
+                --override socket.send.buffer.bytes=102400 \
+                --override unclean.leader.election.enable=true \
+                --override zookeeper.session.timeout.ms=6000 \
+                --override zookeeper.set.acl=false \
+                --override broker.id.generation.enable=true \
+                --override connections.max.idle.ms=600000 \
+                --override controlled.shutdown.enable=false \
+                --override controlled.shutdown.max.retries=3 \
+                --override controlled.shutdown.retry.backoff.ms=5000 \
+                --override controller.socket.timeout.ms=30000 \
+                --override default.replication.factor=1 \
+                --override fetch.purgatory.purge.interval.requests=1000 \
+                --override group.max.session.timeout.ms=300000 \
+                --override group.min.session.timeout.ms=6000 \
+                --override log.cleaner.backoff.ms=15000 \
+                --override log.cleaner.dedupe.buffer.size=134217728 \
+                --override log.cleaner.delete.retention.ms=86400000 \
+                --override log.cleaner.enable=true \
+                --override log.cleaner.io.buffer.load.factor=0.9 \
+                --override log.cleaner.io.buffer.size=524288 \
+                --override log.cleaner.io.max.bytes.per.second=1.7976931348623157E308 \
+                --override log.cleaner.min.cleanable.ratio=0.5 \
+                --override log.cleaner.min.compaction.lag.ms=0 \
+                --override log.cleaner.threads=1 \
+                --override log.cleanup.policy=delete \
+                --override log.index.interval.bytes=4096 \
+                --override log.index.size.max.bytes=10485760 \
+                --override log.message.timestamp.difference.max.ms=9223372036854775807 \
+                --override log.message.timestamp.type=CreateTime \
+                --override log.preallocate=false \
+                --override log.retention.check.interval.ms=300000 \
+                --override max.connections.per.ip=2147483647 \
+                --override num.partitions=1 \
+                --override producer.purgatory.purge.interval.requests=1000 \
+                --override replica.fetch.backoff.ms=1000 \
+                --override replica.fetch.max.bytes=1048576 \
+                --override replica.fetch.response.max.bytes=10485760 \
+                --override reserved.broker.max.id=1000
+              livenessProbe:
+                exec:
+                  command:
+                  - bash
+                  - "-c"
+                  - |
+                    timeout -t 30 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
+                    if [[ $? -eq 0 ]]; then
+                    echo -e "\033[32mKafka server is running, :-)\033[0m"
+                    exit 0
+                    else
+                    echo -e "\033[31mKafka server is not running, :-(\033[0m"
+                    exit 1
+                    fi
+                initialDelaySeconds: 60
+                timeoutSeconds: 5
+              readinessProbe:
+                exec:
+                  command:
+                  - bash
+                  - "-c"
+                  - |
+                    nc -z -v -w5 127.0.0.1 9092
+                    if [ "$?" == 0 ]; then
+                    exit 0
+                    else
+                    exit 1
+                    fi
+                initialDelaySeconds: 90
+                timeoutSeconds: 5
+              ports:
+              - containerPort: 9092
+                name: server1
+              volumeMounts:
+              - name: data
+                mountPath: /opt/kafka-storage
+        volumeClaimTemplates:
+        - metadata:
+            name: data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: 5Gi
+
+
+  #####################FIN KAFKA
+
+
+  ###################BUILDCONFIGS
+
+    - apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+          build: kafka
+        name: kafka
+      spec:
+        failedBuildsHistoryLimit: 5
+        nodeSelector: null
+        output:
+          to:
             kind: ImageStreamTag
-            name: kafka-manager-sbt:latest
-          paths:
-          - sourcePath: /opt/kafka-manager/target/universal/kafka-manager-2.0.0.2
-            destinationDir: "."
-      strategy:
-        type: Docker
-      triggers:
-      - type: "imageChange"
-        imageChange:
-          from:
-            kind: "ImageStreamTag"
-            name: "kafka-manager-sbt:latest"
+            name: 'kafka:2.3.0'
+        postCommit: {}
+        resources: {}
+        runPolicy: Serial
+        source:
+          contextDir: kafka
+          git:
+            ref: master
+            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+          type: Git
+        strategy:
+          dockerStrategy:
+            dockerfilePath: Dockerfile
+          type: Docker
+        successfulBuildsHistoryLimit: 5
+        triggers:
+          - type: ConfigChange
 
 
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: kafka-zookeeper-kafkamanager
-      name: kafka-manager
-    spec: {}
+    - apiVersion: v1
+      kind: ImageStream
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka
+      spec: {}
 
 
 
-  - apiVersion: v1
-    data:
-      routes: |-
-        # Copyright 2015 Yahoo Inc. Licensed under the Apache License, Version 2.0
-        # See accompanying LICENSE file.
-        #
-        # Routes
-        # This file defines all application routes (Higher priority routes first)
-        # ~~~~
-        # Home page
-        GET    /                                                    controllers.Application.index
-        GET    /clusters/:c                                         controllers.Cluster.cluster(c:String)
-        GET    /clusters/:c/topics                                  controllers.Topic.topics(c:String)
-        GET    /clusters/:c/topics/addPartitions                    controllers.Topic.addPartitionsToMultipleTopics(c:String)
-        POST   /clusters/:c/topics/addPartitions                    controllers.Topic.handleAddPartitionsToMultipleTopics(c:String)
-        GET    /clusters/:c/topics/:t                               controllers.Topic.topic(c:String, t:String, force:Boolean ?= false)
-        GET    /clusters/:c/logkafkas                               controllers.Logkafka.logkafkas(c:String)
-        GET    /clusters/:c/logkafkas/:h/:l                         controllers.Logkafka.logkafka(c:String, h:String, l:String)
-        GET    /clusters/:c/brokers                                 controllers.Cluster.brokers(c: String)
-        GET    /clusters/:c/brokers/:b                              controllers.Cluster.broker(c: String, b:Int)
-        GET    /clusters/:c/consumers                               controllers.Consumer.consumers(c: String)
-        GET    /clusters/:c/consumers/:g/type/:ct                   controllers.Consumer.consumer(c: String, g:String, ct: String)
-        GET    /clusters/:c/consumers/:g/topic/:t/type/:ct          controllers.Consumer.consumerAndTopic(c: String, g:String, t:String, ct: String)
-        GET    /clusters/:c/leader                                  controllers.PreferredReplicaElection.preferredReplicaElection(c:String)
-        POST   /clusters/:c/leader                                  controllers.PreferredReplicaElection.handleRunElection(c:String)
-        GET    /clusters/:c/assignment                              controllers.ReassignPartitions.reassignPartitions(c:String)
-        POST   /clusters/:c/assignment                              controllers.ReassignPartitions.handleOperation(c:String,t:String)
-        GET    /clusters/:c/assignment/confirm                      controllers.ReassignPartitions.confirmAssignment(c:String,t:String)
-        POST   /clusters/:c/assignment/generate                     controllers.ReassignPartitions.handleGenerateAssignment(c:String,t:String)
-        GET    /clusters/:c/assignments/confirm                     controllers.ReassignPartitions.confirmMultipleAssignments(c:String)
-        POST   /clusters/:c/assignments/generate                    controllers.ReassignPartitions.handleGenerateMultipleAssignments(c:String)
-        #GET   /clusters/:c/assignments/manual                      controllers.ReassignPartitions.manualMultipleAssignments(c:String)
-        #POST  /clusters/:c/assignments/manual                      controllers.ReassignPartitions.handleManualAssignment(c:String)
-        GET    /clusters/:c/assignments/run                         controllers.ReassignPartitions.runMultipleAssignments(c:String)
-        POST   /clusters/:c/assignments/run                         controllers.ReassignPartitions.handleRunMultipleAssignments(c:String)
-        GET    /addCluster                                          controllers.Cluster.addCluster
-        GET    /updateCluster                                       controllers.Cluster.updateCluster(c: String)
-        POST   /clusters                                            controllers.Cluster.handleAddCluster
-        POST   /clusters/:c                                         controllers.Cluster.handleUpdateCluster(c:String)
-        GET    /clusters/:c/createTopic                             controllers.Topic.createTopic(c:String)
-        POST   /clusters/:c/topics/create                           controllers.Topic.handleCreateTopic(c:String)
-        GET    /clusters/:c/topics/:t/confirm_delete                controllers.Topic.confirmDeleteTopic(c:String,t:String)
-        POST   /clusters/:c/topics/delete                           controllers.Topic.handleDeleteTopic(c:String,t:String)
-        GET    /clusters/:c/topics/:t/addPartitions                 controllers.Topic.addPartitions(c:String,t:String)
-        POST   /clusters/:c/topics/:t/addPartitions                 controllers.Topic.handleAddPartitions(c:String,t:String)
-        GET    /clusters/:c/topics/:t/updateConfig                  controllers.Topic.updateConfig(c:String,t:String)
-        POST   /clusters/:c/topics/:t/updateConfig                  controllers.Topic.handleUpdateConfig(c:String,t: String)
-        GET    /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.manualAssignments(c:String, t:String)
-        POST   /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.handleManualAssignment(c:String, t: String)
-        GET    /clusters/:c/createLogkafka                          controllers.Logkafka.createLogkafka(c:String)
-        POST   /clusters/:c/logkafkas/create                        controllers.Logkafka.handleCreateLogkafka(c:String)
-        POST   /clusters/:c/logkafkas/delete                        controllers.Logkafka.handleDeleteLogkafka(c:String, h:String, l:String)
-        GET    /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.updateConfig(c:String, h:String, l:String)
-        POST   /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.handleUpdateConfig(c:String, h:String, l:String)
-        POST   /clusters/:c/logkafkas/:h/:l/disableConfig           controllers.Logkafka.handleDisableConfig(c:String, h:String, l:String)
-        POST   /clusters/:c/logkafkas/:h/:l/enableConfig            controllers.Logkafka.handleEnableConfig(c:String, h:String, l:String)
-        GET    /api/status/:c/brokers                               controllers.api.KafkaStateCheck.brokers(c:String)
-        GET    /api/status/:c/brokers/extended                      controllers.api.KafkaStateCheck.brokersExtended(c:String)
-        GET    /api/status/:c/topics                                controllers.api.KafkaStateCheck.topics(c:String)
-        GET    /api/status/:c/topicIdentities                       controllers.api.KafkaStateCheck.topicIdentities(c:String)
-        GET    /api/status/clusters                                 controllers.api.KafkaStateCheck.clusters
-        GET    /api/status/:c/:t/underReplicatedPartitions          controllers.api.KafkaStateCheck.underReplicatedPartitions(c:String,t:String)
-        GET    /api/status/:c/:t/unavailablePartitions              controllers.api.KafkaStateCheck.unavailablePartitions(c:String,t:String)
-        GET    /api/status/:cluster/:consumer/:topic/:consumerType/topicSummary   controllers.api.KafkaStateCheck.topicSummaryAction(cluster:String, consumer:String, topic:String, consumerType:String)
-        GET    /api/status/:cluster/:consumer/:consumerType/groupSummary          controllers.api.KafkaStateCheck.groupSummaryAction(cluster:String, consumer:String, consumerType:String)
-        GET    /api/status/:cluster/consumersSummary                controllers.api.KafkaStateCheck.consumersSummaryAction(cluster:String)
-        # Versioned Assets
-        GET    /vassets/*file                                       controllers.Assets.versioned(path="/public", file: Asset)
-        # Unversioned Assets
-        GET    /assets/*file                                        controllers.Assets.at(path="/public", file)
-        # Ping / Health Check
-        GET    /api/health                                          controllers.ApiHealth.ping
-      logger.xml: |-
-        <configuration>
+    - apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+          build: zookeeper
+        name: zookeeper
+      spec:
+        failedBuildsHistoryLimit: 5
+        nodeSelector: null
+        output:
+          to:
+            kind: ImageStreamTag
+            name: 'zookeeper:3.5.5'
+        postCommit: {}
+        resources: {}
+        runPolicy: Serial
+        source:
+          contextDir: zookeeper
+          git:
+            ref: master
+            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+          type: Git
+        strategy:
+          dockerStrategy:
+            dockerfilePath: Dockerfile
+          type: Docker
+        successfulBuildsHistoryLimit: 5
+        triggers:
+          - type: ConfigChange
+
+
+    - apiVersion: v1
+      kind: ImageStream
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: zookeeper
+      spec: {}
+
+  ########################
+
+
+
+  ##################### KAFKA MANAGER
+
+
+    - apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: "kafka-manager"
+      spec:
+        replicas: 1
+        revisionHistoryLimit: 10
+        selector:
+          app: kafka-zookeeper-kafkamanager
+          deploymentconfig: kafka-manager
+        strategy:
+          activeDeadlineSeconds: 21600
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
+          rollingParams:
+            intervalSeconds: 1
+            maxSurge: 25%
+            maxUnavailable: 25%
+            timeoutSeconds: 600
+            updatePeriodSeconds: 1
+          type: Rolling
+        template:
+          metadata:
+            labels:
+              app: kafka-zookeeper-kafkamanager
+              deploymentconfig: kafka-manager
+          spec:
+            containers:
+              - initContainers:
+                - name: wait-zookeeper
+                  image: kafka:2.3.0
+                  command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
+                env:
+                  - name: NAMESPACE
+                    valueFrom:
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+                  - name: JAVA_OPTS
+                    value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                image: "kafka-manager:latest"
+                imagePullPolicy: Always
+                name: kafka-manager
+                livenessProbe:
+                  failureThreshold: 3
+                  initialDelaySeconds: 60
+                  periodSeconds: 20
+                  successThreshold: 1
+                  httpGet:
+                    port: 9000
+                    path: /
+                  timeoutSeconds: 15
+                readinessProbe:
+                  failureThreshold: 3
+                  initialDelaySeconds: 60
+                  periodSeconds: 20
+                  successThreshold: 1
+                  httpGet:
+                    port: 9000
+                    path: /
+                  timeoutSeconds: 15
+                resources:
+                  requests:
+                    cpu: 500m
+                    memory: 1Gi
+                  limits:
+                    cpu: 1
+                    memory: 1Gi
+                ports:
+                  - containerPort: 9000
+                    protocol: TCP
+                lifecycle:
+                  postStart:
+                    exec:
+                      command:
+                      - bash
+                      - "-c"
+                      - |
+                        OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
+                        while [  $OK != 200 ]; do
+                            echo "aun no activo"
+                            let OK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
+                        done
+                        curl -d "name=openshift&zkHosts=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181%2Czookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local%3A2181&kafkaVersion=2.2.0&jmxEnabled=true&jmxUser=&jmxPass=&tuning.brokerViewUpdatePeriodSeconds=30&tuning.clusterManagerThreadPoolSize=2&tuning.clusterManagerThreadPoolQueueSize=100&tuning.kafkaCommandThreadPoolSize=2&tuning.kafkaCommandThreadPoolQueueSize=100&tuning.logkafkaCommandThreadPoolSize=2&tuning.logkafkaCommandThreadPoolQueueSize=100&tuning.logkafkaUpdatePeriodSeconds=30&tuning.partitionOffsetCacheTimeoutSecs=5&tuning.brokerViewThreadPoolSize=3&tuning.brokerViewThreadPoolQueueSize=1000&tuning.offsetCacheThreadPoolSize=3&tuning.offsetCacheThreadPoolQueueSize=1000&tuning.kafkaAdminClientThreadPoolSize=3&tuning.kafkaAdminClientThreadPoolQueueSize=1000&tuning.kafkaManagedOffsetMetadataCheckMillis=30000&tuning.kafkaManagedOffsetGroupCacheSize=1000000&tuning.kafkaManagedOffsetGroupExpireDays=7&securityProtocol=PLAINTEXT&saslMechanism=DEFAULT&jaasConfig=" -X POST http://localhost:9000/clusters || exit 0
+                volumeMounts:
+                - name: kafka-manager
+                  mountPath: /opt/kafka-manager-2.0.0.2/conf
+                  terminationMessagePath: /dev/termination-log
+                  terminationMessagePolicy: File
+            dnsPolicy: ClusterFirst
+            volumes:
+            - name: kafka-manager
+              configMap:
+                name: kafka-manager
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            terminationGracePeriodSeconds: 30
+        test: false
+        triggers:
+          - type: ConfigChange
+          - imageChangeParams:
+              automatic: true
+              containerNames:
+                - kafka-manager
+              from:
+                kind: ImageStreamTag
+                name: "kafka-manager:latest"
+            type: ImageChange
+
+
+    - apiVersion: v1
+      kind: Service
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-manager
+      spec:
+        ports:
+          - name: http
+            port: 9000
+            protocol: TCP
+            targetPort: 9000
+        selector:
+          app: kafka-zookeeper-kafkamanager
+          deploymentconfig: kafka-manager
+        sessionAffinity: None
+        type: ClusterIP
+
+
+    - apiVersion: v1
+      kind: Route
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-manager-http
+      spec:
+        port:
+          targetPort: http
+        to:
+          kind: Service
+          name: kafka-manager
+          weight: 100
+        wildcardPolicy: None
+
+
+    - apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+          build: kafka-manager-sbt
+        name: kafka-manager-sbt
+      spec:
+        failedBuildsHistoryLimit: 5
+        nodeSelector: null
+        output:
+          to:
+            kind: ImageStreamTag
+            name: 'kafka-manager-sbt:latest'
+        postCommit: {}
+        resources: {}
+        runPolicy: Serial
+        source:
+          contextDir: kafka-manager
+          git:
+            ref: master
+            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+          type: Git
+        strategy:
+          dockerStrategy:
+            dockerfilePath: Dockerfile
+          type: Docker
+        successfulBuildsHistoryLimit: 5
+        triggers:
+          - type: ConfigChange
+
+    - apiVersion: v1
+      kind: ImageStream
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-manager-sbt
+      spec: {}
+
+
+    - apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-manager
+      spec:
+        completionDeadlineSeconds: 1800
+        output:
+          to:
+            kind: ImageStreamTag
+            name: kafka-manager:latest
+        source:
+          type: Dockerfile
+          dockerfile: |-
+                  FROM alpine:3.10
+                  USER root
+                  RUN apk add --update --no-cache shadow busybox-suid openjdk8 bash curl && mkdir -p /opt
+                  COPY kafka-manager-2.0.0.2 /opt/kafka-manager-2.0.0.2
+                  RUN adduser -u 1001 -D -h /opt/kafka-manager-2.0.0.2 app && usermod -aG 0 app && \
+                  chown 1001:0 -R /opt && \
+                  chgrp -R 0 /opt && \
+                  chmod +x /opt/kafka-manager-2.0.0.2/bin/* && \
+                  chmod -R g=u /opt
+                  USER 1001
+                  ENV HOME /opt/kafka-manager-2.0.0.2
+                  CMD ["/opt/kafka-manager-2.0.0.2/bin/kafka-manager", "-Dconfig.file=/opt/kafka-manager-2.0.0.2/conf/application.conf", "-Dapplication.home=/opt/kafka-manager-2.0.0.2"]
+          images:
+          - from:
+              kind: ImageStreamTag
+              name: kafka-manager-sbt:latest
+            paths:
+            - sourcePath: /opt/kafka-manager/target/universal/kafka-manager-2.0.0.2
+              destinationDir: "."
+        strategy:
+          type: Docker
+        triggers:
+        - type: "imageChange"
+          imageChange:
+            from:
+              kind: "ImageStreamTag"
+              name: "kafka-manager-sbt:latest"
+
+
+    - apiVersion: v1
+      kind: ImageStream
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-manager
+      spec: {}
+
+
+
+    - apiVersion: v1
+      data:
+        routes: |-
+          # Copyright 2015 Yahoo Inc. Licensed under the Apache License, Version 2.0
+          # See accompanying LICENSE file.
+          #
+          # Routes
+          # This file defines all application routes (Higher priority routes first)
+          # ~~~~
+          # Home page
+          GET    /                                                    controllers.Application.index
+          GET    /clusters/:c                                         controllers.Cluster.cluster(c:String)
+          GET    /clusters/:c/topics                                  controllers.Topic.topics(c:String)
+          GET    /clusters/:c/topics/addPartitions                    controllers.Topic.addPartitionsToMultipleTopics(c:String)
+          POST   /clusters/:c/topics/addPartitions                    controllers.Topic.handleAddPartitionsToMultipleTopics(c:String)
+          GET    /clusters/:c/topics/:t                               controllers.Topic.topic(c:String, t:String, force:Boolean ?= false)
+          GET    /clusters/:c/logkafkas                               controllers.Logkafka.logkafkas(c:String)
+          GET    /clusters/:c/logkafkas/:h/:l                         controllers.Logkafka.logkafka(c:String, h:String, l:String)
+          GET    /clusters/:c/brokers                                 controllers.Cluster.brokers(c: String)
+          GET    /clusters/:c/brokers/:b                              controllers.Cluster.broker(c: String, b:Int)
+          GET    /clusters/:c/consumers                               controllers.Consumer.consumers(c: String)
+          GET    /clusters/:c/consumers/:g/type/:ct                   controllers.Consumer.consumer(c: String, g:String, ct: String)
+          GET    /clusters/:c/consumers/:g/topic/:t/type/:ct          controllers.Consumer.consumerAndTopic(c: String, g:String, t:String, ct: String)
+          GET    /clusters/:c/leader                                  controllers.PreferredReplicaElection.preferredReplicaElection(c:String)
+          POST   /clusters/:c/leader                                  controllers.PreferredReplicaElection.handleRunElection(c:String)
+          GET    /clusters/:c/assignment                              controllers.ReassignPartitions.reassignPartitions(c:String)
+          POST   /clusters/:c/assignment                              controllers.ReassignPartitions.handleOperation(c:String,t:String)
+          GET    /clusters/:c/assignment/confirm                      controllers.ReassignPartitions.confirmAssignment(c:String,t:String)
+          POST   /clusters/:c/assignment/generate                     controllers.ReassignPartitions.handleGenerateAssignment(c:String,t:String)
+          GET    /clusters/:c/assignments/confirm                     controllers.ReassignPartitions.confirmMultipleAssignments(c:String)
+          POST   /clusters/:c/assignments/generate                    controllers.ReassignPartitions.handleGenerateMultipleAssignments(c:String)
+          #GET   /clusters/:c/assignments/manual                      controllers.ReassignPartitions.manualMultipleAssignments(c:String)
+          #POST  /clusters/:c/assignments/manual                      controllers.ReassignPartitions.handleManualAssignment(c:String)
+          GET    /clusters/:c/assignments/run                         controllers.ReassignPartitions.runMultipleAssignments(c:String)
+          POST   /clusters/:c/assignments/run                         controllers.ReassignPartitions.handleRunMultipleAssignments(c:String)
+          GET    /addCluster                                          controllers.Cluster.addCluster
+          GET    /updateCluster                                       controllers.Cluster.updateCluster(c: String)
+          POST   /clusters                                            controllers.Cluster.handleAddCluster
+          POST   /clusters/:c                                         controllers.Cluster.handleUpdateCluster(c:String)
+          GET    /clusters/:c/createTopic                             controllers.Topic.createTopic(c:String)
+          POST   /clusters/:c/topics/create                           controllers.Topic.handleCreateTopic(c:String)
+          GET    /clusters/:c/topics/:t/confirm_delete                controllers.Topic.confirmDeleteTopic(c:String,t:String)
+          POST   /clusters/:c/topics/delete                           controllers.Topic.handleDeleteTopic(c:String,t:String)
+          GET    /clusters/:c/topics/:t/addPartitions                 controllers.Topic.addPartitions(c:String,t:String)
+          POST   /clusters/:c/topics/:t/addPartitions                 controllers.Topic.handleAddPartitions(c:String,t:String)
+          GET    /clusters/:c/topics/:t/updateConfig                  controllers.Topic.updateConfig(c:String,t:String)
+          POST   /clusters/:c/topics/:t/updateConfig                  controllers.Topic.handleUpdateConfig(c:String,t: String)
+          GET    /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.manualAssignments(c:String, t:String)
+          POST   /clusters/:c/topics/:t/assignments/manual            controllers.ReassignPartitions.handleManualAssignment(c:String, t: String)
+          GET    /clusters/:c/createLogkafka                          controllers.Logkafka.createLogkafka(c:String)
+          POST   /clusters/:c/logkafkas/create                        controllers.Logkafka.handleCreateLogkafka(c:String)
+          POST   /clusters/:c/logkafkas/delete                        controllers.Logkafka.handleDeleteLogkafka(c:String, h:String, l:String)
+          GET    /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.updateConfig(c:String, h:String, l:String)
+          POST   /clusters/:c/logkafkas/:h/:l/updateConfig            controllers.Logkafka.handleUpdateConfig(c:String, h:String, l:String)
+          POST   /clusters/:c/logkafkas/:h/:l/disableConfig           controllers.Logkafka.handleDisableConfig(c:String, h:String, l:String)
+          POST   /clusters/:c/logkafkas/:h/:l/enableConfig            controllers.Logkafka.handleEnableConfig(c:String, h:String, l:String)
+          GET    /api/status/:c/brokers                               controllers.api.KafkaStateCheck.brokers(c:String)
+          GET    /api/status/:c/brokers/extended                      controllers.api.KafkaStateCheck.brokersExtended(c:String)
+          GET    /api/status/:c/topics                                controllers.api.KafkaStateCheck.topics(c:String)
+          GET    /api/status/:c/topicIdentities                       controllers.api.KafkaStateCheck.topicIdentities(c:String)
+          GET    /api/status/clusters                                 controllers.api.KafkaStateCheck.clusters
+          GET    /api/status/:c/:t/underReplicatedPartitions          controllers.api.KafkaStateCheck.underReplicatedPartitions(c:String,t:String)
+          GET    /api/status/:c/:t/unavailablePartitions              controllers.api.KafkaStateCheck.unavailablePartitions(c:String,t:String)
+          GET    /api/status/:cluster/:consumer/:topic/:consumerType/topicSummary   controllers.api.KafkaStateCheck.topicSummaryAction(cluster:String, consumer:String, topic:String, consumerType:String)
+          GET    /api/status/:cluster/:consumer/:consumerType/groupSummary          controllers.api.KafkaStateCheck.groupSummaryAction(cluster:String, consumer:String, consumerType:String)
+          GET    /api/status/:cluster/consumersSummary                controllers.api.KafkaStateCheck.consumersSummaryAction(cluster:String)
+          # Versioned Assets
+          GET    /vassets/*file                                       controllers.Assets.versioned(path="/public", file: Asset)
+          # Unversioned Assets
+          GET    /assets/*file                                        controllers.Assets.at(path="/public", file)
+          # Ping / Health Check
+          GET    /api/health                                          controllers.ApiHealth.ping
+        logger.xml: |-
+          <configuration>
+              <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                  <file>${application.home}/logs/application.log</file>
+                  <encoder>
+                    <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+                  </encoder>
+                  <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                      <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                      <maxHistory>5</maxHistory>
+                      <totalSizeCap>5GB</totalSizeCap>
+                  </rollingPolicy>
+              </appender>
+              <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                  <encoder>
+                      <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
+                  </encoder>
+              </appender>
+              <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+                  <appender-ref ref="FILE" />
+              </appender>
+              <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+                  <appender-ref ref="STDOUT" />
+              </appender>
+              <logger name="play" level="INFO" />
+              <logger name="application" level="INFO" />
+              <logger name="kafka.manager" level="INFO" />
+              <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+              <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+              <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+              <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+              <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+              <logger name="org.apache.zookeeper" level="INFO"/>
+              <root level="WARN">
+                  <appender-ref ref="ASYNCFILE" />
+                  <appender-ref ref="ASYNCSTDOUT" />
+              </root>
+          </configuration>
+          /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ^C
+          /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ls
+          application.conf     consumer.properties  logback.xml          logger.xml           routes
+          /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # cat logger.xml
+          <configuration>
+            <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
             <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-                <file>${application.home}/logs/application.log</file>
-                <encoder>
-                  <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
-                </encoder>
-                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                    <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
-                    <maxHistory>5</maxHistory>
-                    <totalSizeCap>5GB</totalSizeCap>
-                </rollingPolicy>
-            </appender>
-            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-                <encoder>
-                    <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
-                </encoder>
-            </appender>
-            <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
-                <appender-ref ref="FILE" />
-            </appender>
-            <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
-                <appender-ref ref="STDOUT" />
+              <file>${application.home}/logs/application.log</file>
+              <encoder>
+                <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+              </encoder>
+              <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <maxHistory>5</maxHistory>
+                <totalSizeCap>5GB</totalSizeCap>
+              </rollingPolicy>
             </appender>
             <logger name="play" level="INFO" />
-            <logger name="application" level="INFO" />
-            <logger name="kafka.manager" level="INFO" />
+            <logger name="application" level="DEBUG" />
             <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
             <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
             <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
             <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
             <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
             <logger name="org.apache.zookeeper" level="INFO"/>
-            <root level="WARN">
-                <appender-ref ref="ASYNCFILE" />
-                <appender-ref ref="ASYNCSTDOUT" />
+            <logger name="akka" level="INFO" />
+            <logger name="kafka" level="INFO" />
+            <root level="INFO">
+              <appender-ref ref="FILE" />
             </root>
-        </configuration>
-        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ^C
-        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # ls
-        application.conf     consumer.properties  logback.xml          logger.xml           routes
-        /kafka-manager/target/universal/kafka-manager-2.0.0.2/conf # cat logger.xml
-        <configuration>
-          <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
-          <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>${application.home}/logs/application.log</file>
-            <encoder>
-              <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
-            </encoder>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-              <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
-              <maxHistory>5</maxHistory>
-              <totalSizeCap>5GB</totalSizeCap>
-            </rollingPolicy>
-          </appender>
-          <logger name="play" level="INFO" />
-          <logger name="application" level="DEBUG" />
-          <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
-          <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
-          <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
-          <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
-          <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
-          <logger name="org.apache.zookeeper" level="INFO"/>
-          <logger name="akka" level="INFO" />
-          <logger name="kafka" level="INFO" />
-          <root level="INFO">
-            <appender-ref ref="FILE" />
-          </root>
-        </configuration>
-      logback.xml: |-
-        <configuration>
-            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-                <file>${application.home}/logs/application.log</file>
-                <encoder>
-                  <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
-                </encoder>
-                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                    <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
-                    <maxHistory>5</maxHistory>
-                    <totalSizeCap>5GB</totalSizeCap>
-                </rollingPolicy>
-            </appender>
-            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-                <encoder>
-                    <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
-                </encoder>
-            </appender>
-            <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
-                <appender-ref ref="FILE" />
-            </appender>
-            <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
-                <appender-ref ref="STDOUT" />
-            </appender>
-            <logger name="play" level="INFO" />
-            <logger name="application" level="INFO" />
-            <logger name="kafka.manager" level="INFO" />
-            <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
-            <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
-            <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
-            <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
-            <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
-            <logger name="org.apache.zookeeper" level="INFO"/>
-            <root level="WARN">
-                <appender-ref ref="ASYNCFILE" />
-                <appender-ref ref="ASYNCSTDOUT" />
-            </root>
-        </configuration>
-      consumer.properties: |-
-        security.protocol=PLAINTEXT
-        key.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
-        value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
-      application.conf: |-
-        play.crypto.secret="^<csmm5Fx4d=r2HEX8pelM3iBkFVv?k[mc;IZE<_Qoq8EkX_/7@Zt6dP05Pzea3U"
-        play.crypto.secret=${?APPLICATION_SECRET}
-        play.http.session.maxAge="1h"
-        play.i18n.langs=["en"]
-        play.http.requestHandler = "play.http.DefaultHttpRequestHandler"
-        play.http.context = "/"
-        play.application.loader=loader.KafkaManagerLoader
-        kafka-manager.zkhosts="zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2181"
-        kafka-manager.zkhosts=${?ZK_HOSTS}
-        pinned-dispatcher.type="PinnedDispatcher"
-        pinned-dispatcher.executor="thread-pool-executor"
-        application.features=["KMClusterManagerFeature","KMTopicManagerFeature","KMPreferredReplicaElectionFeature","KMReassignPartitionsFeature"]
-        akka {
-          loggers = ["akka.event.slf4j.Slf4jLogger"]
-          loglevel = "INFO"
-        }
-        akka.logger-startup-timeout = 60s
-        basicAuthentication.enabled=false
-        basicAuthentication.enabled=${?KAFKA_MANAGER_AUTH_ENABLED}
-        basicAuthentication.ldap.enabled=false
-        basicAuthentication.ldap.enabled=${?KAFKA_MANAGER_LDAP_ENABLED}
-        basicAuthentication.ldap.server=""
-        basicAuthentication.ldap.server=${?KAFKA_MANAGER_LDAP_SERVER}
-        basicAuthentication.ldap.port=389
-        basicAuthentication.ldap.port=${?KAFKA_MANAGER_LDAP_PORT}
-        basicAuthentication.ldap.username=""
-        basicAuthentication.ldap.username=${?KAFKA_MANAGER_LDAP_USERNAME}
-        basicAuthentication.ldap.password=""
-        basicAuthentication.ldap.password=${?KAFKA_MANAGER_LDAP_PASSWORD}
-        basicAuthentication.ldap.search-base-dn=""
-        basicAuthentication.ldap.search-base-dn=${?KAFKA_MANAGER_LDAP_SEARCH_BASE_DN}
-        basicAuthentication.ldap.search-filter="(uid=$capturedLogin$)"
-        basicAuthentication.ldap.search-filter=${?KAFKA_MANAGER_LDAP_SEARCH_FILTER}
-        basicAuthentication.ldap.connection-pool-size=10
-        basicAuthentication.ldap.connection-pool-size=${?KAFKA_MANAGER_LDAP_CONNECTION_POOL_SIZE}
-        basicAuthentication.ldap.ssl=false
-        basicAuthentication.ldap.ssl=${?KAFKA_MANAGER_LDAP_SSL}
-        basicAuthentication.username="admin"
-        basicAuthentication.username=${?KAFKA_MANAGER_USERNAME}
-        basicAuthentication.password="password"
-        basicAuthentication.password=${?KAFKA_MANAGER_PASSWORD}
-        basicAuthentication.realm="Kafka-Manager"
-        basicAuthentication.excluded=["/api/health"] # ping the health of your instance without authentification
-        kafka-manager.consumer.properties.file=${?CONSUMER_PROPERTIES_FILE}
-    kind: ConfigMap
-    metadata:
-      name: kafka-manager
+          </configuration>
+        logback.xml: |-
+          <configuration>
+              <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                  <file>${application.home}/logs/application.log</file>
+                  <encoder>
+                    <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+                  </encoder>
+                  <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                      <fileNamePattern>${application.home}/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                      <maxHistory>5</maxHistory>
+                      <totalSizeCap>5GB</totalSizeCap>
+                  </rollingPolicy>
+              </appender>
+              <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                  <encoder>
+                      <pattern>%date - [%level] %logger{15} - %message%n%xException{10}</pattern>
+                  </encoder>
+              </appender>
+              <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+                  <appender-ref ref="FILE" />
+              </appender>
+              <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+                  <appender-ref ref="STDOUT" />
+              </appender>
+              <logger name="play" level="INFO" />
+              <logger name="application" level="INFO" />
+              <logger name="kafka.manager" level="INFO" />
+              <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+              <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+              <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+              <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+              <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+              <logger name="org.apache.zookeeper" level="INFO"/>
+              <root level="WARN">
+                  <appender-ref ref="ASYNCFILE" />
+                  <appender-ref ref="ASYNCSTDOUT" />
+              </root>
+          </configuration>
+        consumer.properties: |-
+          security.protocol=PLAINTEXT
+          key.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
+          value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer
+        application.conf: |-
+          play.crypto.secret="^<csmm5Fx4d=r2HEX8pelM3iBkFVv?k[mc;IZE<_Qoq8EkX_/7@Zt6dP05Pzea3U"
+          play.crypto.secret=${?APPLICATION_SECRET}
+          play.http.session.maxAge="1h"
+          play.i18n.langs=["en"]
+          play.http.requestHandler = "play.http.DefaultHttpRequestHandler"
+          play.http.context = "/"
+          play.application.loader=loader.KafkaManagerLoader
+          kafka-manager.zkhosts="zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2181,zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2181"
+          kafka-manager.zkhosts=${?ZK_HOSTS}
+          pinned-dispatcher.type="PinnedDispatcher"
+          pinned-dispatcher.executor="thread-pool-executor"
+          application.features=["KMClusterManagerFeature","KMTopicManagerFeature","KMPreferredReplicaElectionFeature","KMReassignPartitionsFeature"]
+          akka {
+            loggers = ["akka.event.slf4j.Slf4jLogger"]
+            loglevel = "INFO"
+          }
+          akka.logger-startup-timeout = 60s
+          basicAuthentication.enabled=false
+          basicAuthentication.enabled=${?KAFKA_MANAGER_AUTH_ENABLED}
+          basicAuthentication.ldap.enabled=false
+          basicAuthentication.ldap.enabled=${?KAFKA_MANAGER_LDAP_ENABLED}
+          basicAuthentication.ldap.server=""
+          basicAuthentication.ldap.server=${?KAFKA_MANAGER_LDAP_SERVER}
+          basicAuthentication.ldap.port=389
+          basicAuthentication.ldap.port=${?KAFKA_MANAGER_LDAP_PORT}
+          basicAuthentication.ldap.username=""
+          basicAuthentication.ldap.username=${?KAFKA_MANAGER_LDAP_USERNAME}
+          basicAuthentication.ldap.password=""
+          basicAuthentication.ldap.password=${?KAFKA_MANAGER_LDAP_PASSWORD}
+          basicAuthentication.ldap.search-base-dn=""
+          basicAuthentication.ldap.search-base-dn=${?KAFKA_MANAGER_LDAP_SEARCH_BASE_DN}
+          basicAuthentication.ldap.search-filter="(uid=$capturedLogin$)"
+          basicAuthentication.ldap.search-filter=${?KAFKA_MANAGER_LDAP_SEARCH_FILTER}
+          basicAuthentication.ldap.connection-pool-size=10
+          basicAuthentication.ldap.connection-pool-size=${?KAFKA_MANAGER_LDAP_CONNECTION_POOL_SIZE}
+          basicAuthentication.ldap.ssl=false
+          basicAuthentication.ldap.ssl=${?KAFKA_MANAGER_LDAP_SSL}
+          basicAuthentication.username="admin"
+          basicAuthentication.username=${?KAFKA_MANAGER_USERNAME}
+          basicAuthentication.password="password"
+          basicAuthentication.password=${?KAFKA_MANAGER_PASSWORD}
+          basicAuthentication.realm="Kafka-Manager"
+          basicAuthentication.excluded=["/api/health"] # ping the health of your instance without authentification
+          kafka-manager.consumer.properties.file=${?CONSUMER_PROPERTIES_FILE}
+      kind: ConfigMap
+      metadata:
+        name: kafka-manager
 
-#####################
+  #####################
 
 
-################PARAMETROS
-  parameters:
-    - name: NAMESPACE
-      displayName: Nombre del proyecto donde esta desplegando el template. Respete maysculas y minúsculas
-      value: ''
-      required: true
+  ################PARAMETROS
+    parameters:
+      - name: NAMESPACE
+        displayName: Nombre del proyecto donde esta desplegando el template. Respete maysculas y minúsculas
+        value: ''
+        required: true
 
-###############
+  ###############
