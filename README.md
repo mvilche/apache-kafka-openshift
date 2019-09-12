@@ -42,7 +42,7 @@ oc scale statefulset kafka --replicas=${NUMBER_REPLICAS}
 
 *  Escalar las instancias de Zookeeper requiere de varios pasos adicionales.
 * Zookeeper utiliza el algoritmo Raft (N/2)+1) por lo que es necesaria como minimo 3 instancias de Zookeper para mantener el Cluster operativo.
-* Para escalar a más instancias es necesario reiniciar el cluster de forma completa finalizada las modificaciones para que acepte los nuevos cambios
+* Para escalar a más instancias es necesario reiniciar el cluster de Kafka y Zookeeper de forma completa.
 ----------------------------------------------------------
 
 1  Editar configmap
