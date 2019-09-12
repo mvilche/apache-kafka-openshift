@@ -198,6 +198,13 @@
                     fi
                 initialDelaySeconds: 30
                 timeoutSeconds: 15
+            resources:
+              requests:
+                cpu: 500m
+                memory: 128Mi
+              limits:
+                cpu: 1
+                memory: 512Mi                     
             volumes:
             - name: configmap
               configMap:
@@ -385,6 +392,13 @@
                     fi
                 initialDelaySeconds: 90
                 timeoutSeconds: 5
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 512Mi                
               ports:
               - containerPort: 9092
                 name: server1
