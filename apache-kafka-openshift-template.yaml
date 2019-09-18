@@ -307,7 +307,7 @@
                 --override offsets.commit.timeout.ms=5000 \
                 --override offsets.load.buffer.size=5242880 \
                 --override offsets.retention.check.interval.ms=600000 \
-                --override offsets.retention.minutes=1440 \
+                --override offsets.retention.minutes=143200 \
                 --override offsets.topic.compression.codec=0 \
                 --override offsets.topic.num.partitions=50 \
                 --override offsets.topic.replication.factor=3 \
