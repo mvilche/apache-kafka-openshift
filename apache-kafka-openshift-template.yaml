@@ -94,15 +94,15 @@
 
 
 
-    - apiVersion: apps/v1
+    - apiVersion: apps/v1beta1
       kind: StatefulSet
       metadata:
         name: zookeeper
       spec:
-        podManagementPolicy: Parallel
         selector:
           matchLabels:
-            app: kafka-zookeeper-kafkamanager
+            app: kafka-zookeeper-kafkamanager   
+        podManagementPolicy: Parallel
         serviceName: zookeeper
         resources:
           requests:
@@ -130,7 +130,7 @@
                 - name: JVMFLAGS
                   value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
               name: zookeeper
-              image: zookeeper:3.5.5
+              image: "zookeeper:3.5.5"
               imagePullPolicy: Always
               command:
               - bash
@@ -236,6 +236,8 @@
         ports:
         - port: 9092
           name: server1
+        - port: 7071
+          name: prometheus
         clusterIP: None
         selector:
           service: kafka
@@ -246,7 +248,11 @@
       metadata:
         name: kafka
       spec:
+        selector:
+          matchLabels:
+            app: kafka-zookeeper-kafkamanager         
         serviceName: kafka
+        podManagementPolicy: Parallel       
         replicas: 3
         template:
           metadata:
@@ -264,9 +270,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -javaagent:/opt/prometheus/jmx_prometheus_javaagent-0.12.0.jar=7071:/opt/prometheus/kafka.yml -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
               name: kafka
-              image: kafka:2.3.0
+              image: "kafka:2.3.0"
               imagePullPolicy: Always
               command:
               - bash
@@ -402,6 +408,8 @@
               ports:
               - containerPort: 9092
                 name: server1
+              - containerPort: 7071
+                name: prometheus                
               volumeMounts:
               - name: data
                 mountPath: /opt/kafka-storage
