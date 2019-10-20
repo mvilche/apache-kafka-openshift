@@ -11,5 +11,5 @@ RUN chmod +x /opt/checkZoo && chown 1001 -R /opt && \
 chgrp -R 0 /opt && \
 chmod -R g=u /opt
 USER 1001
-EXPOSE 9092 9093
+EXPOSE 9092 9093 7071
 WORKDIR /opt/kafka/bin

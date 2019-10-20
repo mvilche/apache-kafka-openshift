@@ -236,8 +236,6 @@
         ports:
         - port: 9092
           name: server1
-        - port: 7071
-          name: prometheus
         clusterIP: None
         selector:
           service: kafka
@@ -248,11 +246,12 @@
       metadata:
         name: kafka
       spec:
+        updateStrategy:
+          type: RollingUpdate
         selector:
           matchLabels:
             app: kafka-zookeeper-kafkamanager         
-        serviceName: kafka
-        podManagementPolicy: Parallel       
+        serviceName: kafka      
         replicas: 3
         template:
           metadata:
@@ -270,7 +269,7 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -javaagent:/opt/prometheus/jmx_prometheus_javaagent-0.12.0.jar=7071:/opt/prometheus/kafka.yml -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
               name: kafka
               image: "kafka:2.3.0"
               imagePullPolicy: Always
@@ -407,9 +406,7 @@
                   memory: 512Mi                
               ports:
               - containerPort: 9092
-                name: server1
-              - containerPort: 7071
-                name: prometheus                
+                name: server1            
               volumeMounts:
               - name: data
                 mountPath: /opt/kafka-storage
@@ -466,7 +463,11 @@
         labels:
           app: kafka-zookeeper-kafkamanager
         name: kafka
-      spec: {}
+      tag: 2.3.0  
+      spec:
+        lookupPolicy:
+          local: true      
+      
 
 
 
@@ -508,7 +509,10 @@
         labels:
           app: kafka-zookeeper-kafkamanager
         name: zookeeper
-      spec: {}
+      tag: 3.5.5        
+      spec:
+        lookupPolicy:
+          local: true  
 
   ########################
 
@@ -706,7 +710,9 @@
         labels:
           app: kafka-zookeeper-kafkamanager
         name: kafka-manager-sbt
-      spec: {}
+      spec:
+        lookupPolicy:
+          local: true  
 
 
     - apiVersion: v1
@@ -759,7 +765,9 @@
         labels:
           app: kafka-zookeeper-kafkamanager
         name: kafka-manager
-      spec: {}
+      spec:
+        lookupPolicy:
+          local: true  
 
 
 
