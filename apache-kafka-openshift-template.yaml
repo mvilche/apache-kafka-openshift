@@ -278,9 +278,7 @@
               - "-c"
               - |
                 rm -rf /opt/kafka-storage/.lock
-                /opt/checkZoo zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local
-                /opt/checkZoo zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local
-                /opt/checkZoo zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local
+                /opt/checkZoo zookeeper
                 /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
                 --override listeners=PLAINTEXT://:9092 \
                 --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
