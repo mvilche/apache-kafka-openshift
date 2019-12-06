@@ -443,7 +443,7 @@
         source:
           contextDir: kafka
           git:
-            ref: developer
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -489,7 +489,7 @@
         source:
           contextDir: zookeeper
           git:
-            ref: developer
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -691,7 +691,7 @@
         source:
           contextDir: kafka-manager
           git:
-            ref: developer
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
