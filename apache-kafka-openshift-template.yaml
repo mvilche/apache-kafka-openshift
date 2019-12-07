@@ -128,7 +128,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: JVMFLAGS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
               name: zookeeper
               image: "zookeeper:3.5.5"
               imagePullPolicy: Always
@@ -275,7 +277,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
                 - name: JMX_PORT
                   value: '9999'
               name: kafka
@@ -518,8 +522,196 @@
         lookupPolicy:
           local: true  
 
+
+
+
+    - apiVersion: v1
+      kind: BuildConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+          build: kafka-exporter
+        name: kafka-exporter
+      spec:
+        failedBuildsHistoryLimit: 5
+        nodeSelector: null
+        output:
+          to:
+            kind: ImageStreamTag
+            name: 'kafka-exporter:latest'
+        postCommit: {}
+        resources: {}
+        runPolicy: Serial
+        source:
+          contextDir: kafka_exporter
+          git:
+            ref: develop
+            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+          type: Git
+        strategy:
+          dockerStrategy:
+            dockerfilePath: Dockerfile
+          type: Docker
+        successfulBuildsHistoryLimit: 5
+        triggers:
+          - type: ConfigChange
+
+
+    - apiVersion: v1
+      kind: ImageStream
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-exporter
+      tag: latest        
+      spec:
+        lookupPolicy:
+          local: true  
+
+
+
   ########################
 
+  #####kafka exporter
+    - apiVersion: v1
+      kind: DeploymentConfig
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: "kafka-exporter"
+      spec:
+        replicas: 1
+        revisionHistoryLimit: 10
+        selector:
+          app: kafka-zookeeper-kafkamanager
+          deploymentconfig: kafka-exporter
+        strategy:
+          activeDeadlineSeconds: 21600
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          rollingParams:
+            intervalSeconds: 1
+            maxSurge: 25%
+            maxUnavailable: 25%
+            timeoutSeconds: 600
+            updatePeriodSeconds: 1
+          type: Rolling
+        template:
+          metadata:
+            labels:
+              app: kafka-zookeeper-kafkamanager
+              deploymentconfig: kafka-exporter
+            annotations:
+              alpha.image.policy.openshift.io/resolve-names: '*'              
+          spec:
+            containers:
+              - initContainers:
+                - name: wait-kafka
+                  image: kafka:2.3.0
+                  command: ['bash', '-c', 'until nc -z -v -w5 kafka 2181; do echo waiting for kafka; sleep 5; done;']
+                env:
+                  - name: NAMESPACE
+                    valueFrom:
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+                command:
+                - bash
+                - "-c"
+                - |
+                  /opt/kafka_exporter --kafka.server=kafka-0.kafka.$NAMESPACE.svc.cluster.local:9092 \
+                  --kafka.server=kafka-1.kafka.$NAMESPACE.svc.cluster.local:9092 \
+                  --kafka.server=kafka-2.kafka.$NAMESPACE.svc.cluster.local:9092                        
+                image: "kafka-exporter:latest"
+                imagePullPolicy: Always
+                name: kafka-manager
+                livenessProbe:
+                  failureThreshold: 3
+                  initialDelaySeconds: 60
+                  periodSeconds: 20
+                  successThreshold: 1
+                  httpGet:
+                    port: 9308
+                    path: /
+                  timeoutSeconds: 15
+                readinessProbe:
+                  failureThreshold: 3
+                  initialDelaySeconds: 60
+                  periodSeconds: 20
+                  successThreshold: 1
+                  httpGet:
+                    port: 9308
+                    path: /
+                  timeoutSeconds: 15
+                resources:
+                  requests:
+                    cpu: 500m
+                    memory: 128Mi
+                  limits:
+                    cpu: 500m
+                    memory: 256Mi
+                ports:
+                  - containerPort: 9308
+                    protocol: TCP
+                  terminationMessagePath: /dev/termination-log
+                  terminationMessagePolicy: File
+            dnsPolicy: ClusterFirst
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            terminationGracePeriodSeconds: 30
+        test: false
+        triggers:
+          - type: ConfigChange
+          - imageChangeParams:
+              automatic: true
+              containerNames:
+                - kafka-exporter
+              from:
+                kind: ImageStreamTag
+                name: "kafka-exporter:latest"
+            type: ImageChange
+
+
+    - apiVersion: v1
+      kind: Service
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-exporter
+      spec:
+        ports:
+          - name: http
+            port: 9308
+            protocol: TCP
+            targetPort: 9308
+        selector:
+          app: kafka-zookeeper-kafkamanager
+          deploymentconfig: kafka-exporter
+        sessionAffinity: None
+        type: ClusterIP
+
+
+    - apiVersion: v1
+      kind: Route
+      metadata:
+        labels:
+          app: kafka-zookeeper-kafkamanager
+        name: kafka-exporter-http
+      spec:
+        port:
+          targetPort: http
+        to:
+          kind: Service
+          name: kafka-exporter
+          weight: 100
+        wildcardPolicy: None
+
+  ####
 
 
   ##################### KAFKA MANAGER
