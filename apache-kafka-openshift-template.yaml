@@ -17,8 +17,15 @@
         openshift.io/documentation-url: "https://github.com/mvilche/wildfly-s2i.git"
         openshift.io/support-url: "https://github.com/mvilche/wildfly-s2i.git"
     message: >-
-      Los servicios iniciarán en un par de minutos...
-      Martin Fabrizzio Vilche
+      Los servicios iniciarán en unos minutos...
+      --------------------------------------------------------------
+      Grafana
+
+      Usuario admin
+      Password admin     
+      --------------------------------------------------------------
+      
+      Martin Fabrizzio Vilche           
 
     objects:
 
