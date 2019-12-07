@@ -1,13 +1,12 @@
 ## Openshift Apache Kafka 2.3.1 + Zookeeper Cluster 3.5.6 + Apache Kafka Manager Dashboard 2.0.0.2
 
   
-```
 ![Kafka Manager](/images/manager.png)
 
 ![Grafana JVM Metrics](/images/jvm_dashboard.png)
 
 ![Kafka Metrics](/images/kafka_metrics.png)
-```
+
 ------------------------------------------------
 
   
