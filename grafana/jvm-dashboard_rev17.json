@@ -1480,19 +1480,19 @@
       },
       {
         "current": {
-          "value": "${VAR_JOB}",
-          "text": "${VAR_JOB}"
+          "value": "java",
+          "text": "java"
         },
         "hide": 0,
         "label": "job",
         "name": "job",
         "options": [
           {
-            "value": "${VAR_JOB}",
-            "text": "${VAR_JOB}"
+            "value": "java",
+            "text": "java"
           }
         ],
-        "query": "${VAR_JOB}",
+        "query": "java",
         "skipUrlSync": false,
         "type": "constant"
       },
