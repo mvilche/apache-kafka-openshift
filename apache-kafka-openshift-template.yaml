@@ -128,7 +128,7 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: JVMFLAGS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
               name: zookeeper
               image: "zookeeper:3.5.5"
               imagePullPolicy: Always
@@ -204,7 +204,7 @@
                 memory: 128Mi
               limits:
                 cpu: 1
-                memory: 512Mi                     
+                memory: 2048Mi                     
             volumes:
             - name: configmap
               configMap:
@@ -236,6 +236,8 @@
         ports:
         - port: 9092
           name: server1
+        - port: 9999
+          name: jmx
         clusterIP: None
         selector:
           service: kafka
@@ -261,6 +263,10 @@
               app: kafka-zookeeper-kafkamanager
               service: kafka
           spec:
+            initContainers:
+            - name: wait-zookeeper
+              image: kafka:2.3.0
+              command: ['bash', '-c', 'until nc -z -v -w5 zookeeper 2181; do echo waiting for zookeeper; sleep 5; done;']
             containers:
             - env:
                 - name: NAMESPACE
@@ -269,7 +275,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JMX_PORT
+                  value: '9999'
               name: kafka
               image: "kafka:2.3.0"
               imagePullPolicy: Always
@@ -371,15 +379,13 @@
                   - bash
                   - "-c"
                   - |
-                    timeout -t 30 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
-                    if [[ $? -eq 0 ]]; then
-                    echo -e "\033[32mKafka server is running, :-)\033[0m"
+                    nc -z -v -w5 127.0.0.1 9092
+                    if [ "$?" == 0 ]; then
                     exit 0
                     else
-                    echo -e "\033[31mKafka server is not running, :-(\033[0m"
                     exit 1
                     fi
-                initialDelaySeconds: 60
+                initialDelaySeconds: 90
                 timeoutSeconds: 5
               readinessProbe:
                 exec:
@@ -401,7 +407,7 @@
                   memory: 128Mi
                 limits:
                   cpu: 1
-                  memory: 512Mi                
+                  memory: 1024Mi                
               ports:
               - containerPort: 9092
                 name: server1            
@@ -552,12 +558,14 @@
             labels:
               app: kafka-zookeeper-kafkamanager
               deploymentconfig: kafka-manager
+            annotations:
+              alpha.image.policy.openshift.io/resolve-names: '*'              
           spec:
             containers:
               - initContainers:
                 - name: wait-zookeeper
                   image: kafka:2.3.0
-                  command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2181  2181; do echo waiting for zookeeper; sleep 5; done;']
+                  command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local 2181; do echo waiting for zookeeper; sleep 5; done;']
                 env:
                   - name: NAMESPACE
                     valueFrom:
