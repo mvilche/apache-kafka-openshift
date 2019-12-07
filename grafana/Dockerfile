@@ -1,12 +1,11 @@
 FROM centos:7
 
 RUN yum install wget nc -y && \
-wget https://dl.grafana.com/oss/release/grafana-6.4.4.linux-amd64.tar.gz  -O /tmp/grafana.tar.gz && \
- mkdir -p /opt/grafana /opt/grafana-config /opt/grafana-data /opt/grafana-data/data /opt/grafana-data/plugins /opt/grafana-dashboard  && \
+wget https://dl.grafana.com/oss/release/grafana-6.5.1.linux-amd64.tar.gz  -O /tmp/grafana.tar.gz && \
+mkdir -p /opt/grafana /opt/grafana-config /opt/grafana-data /opt/grafana-data/data /opt/grafana-data/plugins /opt/grafana-dashboard  && \
 tar zxvf /tmp/grafana.tar.gz --strip-components 1 -C /opt/grafana && \
 rm -rf /tmp/grafana.tar.gz
 
-COPY kafka-exporter-overview_rev5.json /opt/grafana-dashboard/kafka-exporter-overview_rev5.json
 COPY jvm-dashboard_rev17.json /opt/grafana-dashboard/jvm-dashboard_rev17.json
 COPY kafka-overview_rev1.json /opt/grafana-dashboard/kafka-overview_rev1.json
 

@@ -2154,9 +2154,12 @@
                   - containerPort: 9090
                     protocol: TCP
                 resources:
-                  limits:
+                  requests:
                     cpu: 500m
                     memory: 128Mi
+                  limits:
+                    cpu: 500m
+                    memory: 512Mi
                 livenessProbe:
                   exec:
                     command:
@@ -2308,9 +2311,12 @@
                   - containerPort: 3000
                     protocol: TCP
                 resources:
-                  limits:
+                  requests:
                     cpu: 500m
                     memory: 128Mi
+                  limits:
+                    cpu: 1024m
+                    memory: 1024Mi
                 livenessProbe:
                   exec:
                     command:
