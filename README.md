@@ -5,7 +5,7 @@
 
 ![Grafana JVM Metrics](/images/jvm_dashboard.png)
 
-![Kafka Metrics](/images/kafka_metrics.png)
+![Kafka Metrics](/images/kafka_metrics.jpg)
 
 ------------------------------------------------
 
