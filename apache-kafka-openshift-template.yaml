@@ -609,19 +609,19 @@
             annotations:
               alpha.image.policy.openshift.io/resolve-names: '*'              
           spec:
+            initContainers:
+              - name: wait-kafka
+                image: kafka:2.3.0
+                command: ['bash', '-c', 'until nc -z -v -w5 kafka 9092; do echo waiting for kafka; sleep 5; done;']            
             containers:
-              - initContainers:
-                - name: wait-kafka
-                  image: kafka:2.3.0
-                  command: ['bash', '-c', 'until nc -z -v -w5 kafka 2181; do echo waiting for kafka; sleep 5; done;']
-                env:
+              - env:
                   - name: NAMESPACE
                     valueFrom:
                       fieldRef:
                         apiVersion: v1
                         fieldPath: metadata.namespace
                 command:
-                - bash
+                - sh
                 - "-c"
                 - |
                   /opt/kafka_exporter --kafka.server=kafka-0.kafka.$NAMESPACE.svc.cluster.local:9092 \
@@ -629,7 +629,7 @@
                   --kafka.server=kafka-2.kafka.$NAMESPACE.svc.cluster.local:9092                        
                 image: "kafka-exporter:latest"
                 imagePullPolicy: Always
-                name: kafka-manager
+                name: kafka-exporter
                 livenessProbe:
                   failureThreshold: 3
                   initialDelaySeconds: 60
@@ -658,8 +658,8 @@
                 ports:
                   - containerPort: 9308
                     protocol: TCP
-                  terminationMessagePath: /dev/termination-log
-                  terminationMessagePolicy: File
+                terminationMessagePath: /dev/termination-log
+                terminationMessagePolicy: File
             dnsPolicy: ClusterFirst
             restartPolicy: Always
             schedulerName: default-scheduler
