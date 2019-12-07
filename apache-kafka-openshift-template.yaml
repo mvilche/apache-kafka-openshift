@@ -134,7 +134,7 @@
                 - name: JAVA_OPTS
                   value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
               name: zookeeper
-              image: "zookeeper:3.5.5"
+              image: "zookeeper:3.5.6"
               imagePullPolicy: Always
               command:
               - bash
@@ -278,7 +278,7 @@
           spec:
             initContainers:
             - name: wait-zookeeper
-              image: kafka:2.3.0
+              image: kafka:2.3.1
               command: ['bash', '-c', 'until nc -z -v -w5 zookeeper 2181; do echo waiting for zookeeper; sleep 5; done;']
             containers:
             - env:
@@ -294,7 +294,7 @@
                 - name: JMX_PORT
                   value: '9999'
               name: kafka
-              image: "kafka:2.3.0"
+              image: "kafka:2.3.1"
               imagePullPolicy: Always
               command:
               - bash
@@ -467,7 +467,7 @@
         output:
           to:
             kind: ImageStreamTag
-            name: 'kafka:2.3.0'
+            name: 'kafka:2.3.1'
         postCommit: {}
         resources: {}
         runPolicy: Serial
@@ -513,7 +513,7 @@
         output:
           to:
             kind: ImageStreamTag
-            name: 'zookeeper:3.5.5'
+            name: 'zookeeper:3.5.6'
         postCommit: {}
         resources: {}
         runPolicy: Serial
@@ -632,7 +632,7 @@
           spec:
             initContainers:
               - name: wait-kafka
-                image: kafka:2.3.0
+                image: kafka:2.3.1
                 command: ['bash', '-c', 'until nc -z -v -w5 kafka 9092; do echo waiting for kafka; sleep 5; done;']            
             containers:
               - env:
@@ -777,7 +777,7 @@
             containers:
               - initContainers:
                 - name: wait-zookeeper
-                  image: kafka:2.3.0
+                  image: kafka:2.3.1
                   command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local 2181; do echo waiting for zookeeper; sleep 5; done;']
                 env:
                   - name: NAMESPACE
