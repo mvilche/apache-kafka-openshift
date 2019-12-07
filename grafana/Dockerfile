@@ -7,6 +7,7 @@ tar zxvf /tmp/grafana.tar.gz --strip-components 1 -C /opt/grafana && \
 rm -rf /tmp/grafana.tar.gz
 
 COPY kafka-exporter-overview_rev5.json /opt/grafana-dashboard/kafka-exporter-overview_rev5.json
+COPY jvm-dashboard_rev17.json/opt/grafana-dashboard/jvm-dashboard_rev17.json
 
 RUN adduser -u 1001 grafana && usermod -aG 0 grafana && \
 chown -R 1001 /opt && \

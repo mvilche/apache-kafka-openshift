@@ -2064,7 +2064,20 @@
               # scheme defaults to 'http'.
 
               static_configs:
-              - targets: ['kafka-exporter:9308']              
+              - targets: ['kafka-exporter:9308']
+              
+            - job_name: 'java'
+
+              # metrics_path defaults to '/metrics'
+              # scheme defaults to 'http'.
+
+              static_configs:
+              - targets: ['kafka-0.kafka.$NAMESPACE.svc.cluster.local:9998']
+              - targets: ['kafka-1.kafka.$NAMESPACE.svc.cluster.local:9998']
+              - targets: ['kafka-2.kafka.$NAMESPACE.svc.cluster.local:9998']
+              - targets: ['zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:9998']
+              - targets: ['zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:9998']
+              - targets: ['zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:9998']
 
 
       kind: ConfigMap
