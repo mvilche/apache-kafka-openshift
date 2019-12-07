@@ -1954,14 +1954,10 @@
           deploymentconfig: prometheus
         strategy:
           activeDeadlineSeconds: 21600
-          resources: {}
-          rollingParams:
-            intervalSeconds: 1
-            maxSurge: 25%
-            maxUnavailable: 25%
+          recreateParams:
             timeoutSeconds: 600
-            updatePeriodSeconds: 1
-          type: Rolling
+          resources: {}
+          type: Recreate
         template:
           metadata:
             labels:
@@ -2112,14 +2108,10 @@
           deploymentconfig: grafana
         strategy:
           activeDeadlineSeconds: 21600
-          resources: {}
-          rollingParams:
-            intervalSeconds: 1
-            maxSurge: 25%
-            maxUnavailable: 25%
+          recreateParams:
             timeoutSeconds: 600
-            updatePeriodSeconds: 1
-          type: Rolling
+          resources: {}
+          type: Recreate
         template:
           metadata:
             labels:
