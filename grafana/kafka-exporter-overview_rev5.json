@@ -55,7 +55,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_WH211}",
+      "datasource": "Prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -144,7 +144,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_WH211}",
+      "datasource": "Prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -234,7 +234,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_WH211}",
+      "datasource": "Prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -322,7 +322,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_WH211}",
+      "datasource": "Prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -411,7 +411,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_WH211}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 7,
@@ -507,7 +507,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS_WH211}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": false,
         "label": "Job",
@@ -527,7 +527,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS_WH211}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": false,
         "label": "Instance",
@@ -547,7 +547,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_PROMETHEUS_WH211}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": "Topic",

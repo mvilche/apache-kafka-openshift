@@ -1228,7 +1228,7 @@
           plugins = /opt/grafana-data/plugins
 
           # folder that contains provisioning config files that grafana will apply on startup and while running.
-          provisioning = /opt/grafana/provisioning
+          provisioning = /opt/grafana/conf/provisioning
 
           #################################### Server ####################################
           [server]
@@ -1829,17 +1829,11 @@
         datasources.yml: |-
           # config file version
           apiVersion: 1
-
-          # list of datasources that should be deleted from the database
-          deleteDatasources:
-            - name: Prometheus
-              orgId: 1
-
           # list of datasources to insert/update depending
           # what's available in the database
           datasources:
             # <string, required> name of the datasource. Required
-          - name: Prometheus
+          - name: 'Prometheus'
             # <string, required> datasource type. Required
             type: prometheus
             # <string, required> access mode. proxy or direct (Server or Browser in the UI). Required
@@ -1849,25 +1843,11 @@
             # <string> url
             url: http://prometheus:9090
             # <string> Deprecated, use secureJsonData.password
-            password:
-            # <string> database user, if used
-            user:
-            # <string> database name, if used
-            database:
-            # <bool> enable/disable basic auth
-            basicAuth:
-            # <string> basic auth username
-            basicAuthUser:
-            # <string> Deprecated, use secureJsonData.basicAuthPassword
-            basicAuthPassword:
-            # <bool> enable/disable with credentials headers
-            withCredentials:
-            # <bool> mark as default datasource. Max one per org
-            isDefault:
+            isDefault: true
             # <map> fields that will be converted to json and stored in jsonData
             version: 1
             # <bool> allow users to edit datasources from the UI.
-            editable: false
+            editable: true
       kind: ConfigMap
       metadata:
         name: grafana-config-datasource
@@ -1878,12 +1858,10 @@
           apiVersion: 1
           
           providers:
-          - name: 'Prometheus'
+          - name: 'default'
             orgId: 1
             folder: ''
             type: file
-            disableDeletion: false
-            editable: true
             options:
               path: /opt/grafana-dashboard
       kind: ConfigMap
