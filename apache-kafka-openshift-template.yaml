@@ -286,7 +286,7 @@
           spec:
             initContainers:
             - name: wait-zookeeper
-              image: kafka:2.3.1
+              image: kafka:2.4.1
               command: ['bash', '-c', 'until nc -z -v -w5 zookeeper 2181; do echo waiting for zookeeper; sleep 5; done;']
             containers:
             - env:
@@ -302,7 +302,7 @@
                 - name: JMX_PORT
                   value: '9999'
               name: kafka
-              image: "kafka:2.3.1"
+              image: "kafka:2.4.1"
               imagePullPolicy: Always
               command:
               - bash
@@ -475,7 +475,7 @@
         output:
           to:
             kind: ImageStreamTag
-            name: 'kafka:2.3.1'
+            name: 'kafka:2.4.1'
         postCommit: {}
         resources: {}
         runPolicy: Serial
@@ -487,6 +487,8 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -533,6 +535,8 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -579,6 +583,8 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -640,7 +646,7 @@
           spec:
             initContainers:
               - name: wait-kafka
-                image: kafka:2.3.1
+                image: kafka:2.4.1
                 command: ['bash', '-c', 'until nc -z -v -w5 kafka 9092; do echo waiting for kafka; sleep 5; done;']            
             containers:
               - env:
@@ -785,7 +791,7 @@
             containers:
               - initContainers:
                 - name: wait-zookeeper
-                  image: kafka:2.3.1
+                  image: kafka:2.4.1
                   command: ['bash', '-c', 'until nc -z -v -w5 zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local 2181; do echo waiting for zookeeper; sleep 5; done;']
                 env:
                   - name: NAMESPACE
@@ -925,7 +931,10 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
+            
           type: Docker
         successfulBuildsHistoryLimit: 5
         triggers:
@@ -2281,6 +2290,8 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -2480,6 +2491,8 @@
           type: Git
         strategy:
           dockerStrategy:
+            noCache: true
+            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
