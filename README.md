@@ -45,7 +45,7 @@
 
 ```console
 
-oc create -f apache-kafka-openshift-template.yaml \
+oc new-app -f apache-kafka-openshift-template.yaml \
 
 -p NAMESPACE=${PROJECT_NAME} \
 
