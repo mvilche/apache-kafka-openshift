@@ -487,8 +487,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -535,8 +533,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -583,8 +579,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -931,8 +925,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
             
           type: Docker
@@ -1281,7 +1273,7 @@
               name: "zookeeper_$2"              
       kind: ConfigMap
       metadata:
-        name: jmx-exporter-zoo        
+        name: jmx-exporter-zoo
 
 
     - apiVersion: v1
@@ -2290,8 +2282,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
@@ -2491,8 +2481,6 @@
           type: Git
         strategy:
           dockerStrategy:
-            noCache: true
-            forcePull: true
             dockerfilePath: Dockerfile
           type: Docker
         successfulBuildsHistoryLimit: 5
