@@ -482,7 +482,7 @@
         source:
           contextDir: kafka
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -530,7 +530,7 @@
         source:
           contextDir: zookeeper
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -578,7 +578,7 @@
         source:
           contextDir: kafka_exporter
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -926,7 +926,7 @@
         source:
           contextDir: kafka-manager
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -2285,7 +2285,7 @@
         source:
           contextDir: prometheus
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -2486,7 +2486,7 @@
         source:
           contextDir: grafana
           git:
-            ref: develop
+            ref: production
             uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
