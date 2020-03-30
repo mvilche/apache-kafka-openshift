@@ -483,7 +483,7 @@
           contextDir: kafka
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
@@ -531,7 +531,7 @@
           contextDir: zookeeper
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
@@ -579,7 +579,7 @@
           contextDir: kafka_exporter
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
@@ -927,7 +927,7 @@
           contextDir: kafka-manager
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
@@ -2286,7 +2286,7 @@
           contextDir: prometheus
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
@@ -2487,7 +2487,7 @@
           contextDir: grafana
           git:
             ref: develop
-            uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
+            uri: 'https://github.com/rmacian/apache-kafka-openshift.git'
           type: Git
         strategy:
           dockerStrategy:
