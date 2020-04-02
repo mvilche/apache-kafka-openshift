@@ -2,12 +2,12 @@
     apiVersion: v1
     kind: Template
     metadata:
-      name: kafka-zookeeper-openshift-mvilche
+      name: develop-kafka-zookeeper-openshift-mvilche
       labels:
-        template: kafka-zookeeper-openshift-mvilche
+        template: develop-kafka-zookeeper-openshift-mvilche
         autor: "Martin_Fabrizzio_Vilche"
       annotations:
-        openshift.io/display-name: "kafka-zookeeper-openshift-mvilche"
+        openshift.io/display-name: "develop-kafka-zookeeper-openshift-mvilche"
         iconClass: "icon-github"
         description: >-
           APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
@@ -35,8 +35,6 @@
           initLimit=5
           syncLimit=2
           server.1=zookeeper-0.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
-          server.2=zookeeper-1.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
-          server.3=zookeeper-2.zookeeper.${NAMESPACE}.svc.cluster.local:2888:3888
           autopurge.snapRetainCount=3
           autopurge.purgeInterval=24
         log4j.properties: |-
@@ -106,12 +104,12 @@
         serviceName: zookeeper
         resources:
           requests:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 100m
+            memory: 128Mi
           limits:
             cpu: 1000m
-            memory: 1500Mi
-        replicas: 3
+            memory: 1024Mi
+        replicas: 1
         template:
           metadata:
             annotations:
@@ -128,7 +126,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: JVMFLAGS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
               name: zookeeper
               image: "zookeeper:3.6.0"
               imagePullPolicy: Always
@@ -151,11 +151,11 @@
                 /opt/zookeeper/bin/zkServer.sh start-foreground /opt/zookeeper/conf/zoo.cfg
               resources:
                 requests:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: 100m
+                  memory: 128Mi
                 limits:
                   cpu: 1000m
-                  memory: 1500Mi
+                  memory: 1024Mi
               ports:
               - containerPort: 2181
                 name: client
@@ -252,7 +252,7 @@
           matchLabels:
             app: kafka-zookeeper-kafkamanager         
         serviceName: kafka      
-        replicas: 3
+        replicas: 1
         template:
           metadata:
             annotations:
@@ -269,7 +269,11 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JMX_PORT
+                  value: '9999'
               name: kafka
               image: "kafka:2.4.1"
               imagePullPolicy: Always
@@ -281,7 +285,7 @@
                 /opt/checkZoo zookeeper
                 /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
                 --override listeners=PLAINTEXT://:9092 \
-                --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-1.zookeeper.$NAMESPACE.svc.cluster.local:2181,zookeeper-2.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
+                --override zookeeper.connect=zookeeper-0.zookeeper.$NAMESPACE.svc.cluster.local:2181 \
                 --override log.dirs=/opt/kafka-storage \
                 --override auto.create.topics.enable=true \
                 --override auto.leader.rebalance.enable=true \
@@ -371,7 +375,7 @@
                   - bash
                   - "-c"
                   - |
-                    timeout -t 30 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
+                    JMX_PORT= /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
                     if [[ $? -eq 0 ]]; then
                     echo -e "\033[32mKafka server is running, :-)\033[0m"
                     exit 0
@@ -397,8 +401,8 @@
                 timeoutSeconds: 5
               resources:
                 requests:
-                  cpu: 500m
-                  memory: 300Mi
+                  cpu: 100m
+                  memory: 128Mi
                 limits:
                   cpu: 1000m
                   memory: 1000Mi                
@@ -443,7 +447,7 @@
         source:
           contextDir: kafka
           git:
-            ref: production
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -489,7 +493,7 @@
         source:
           contextDir: zookeeper
           git:
-            ref: production
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
@@ -535,11 +539,11 @@
           activeDeadlineSeconds: 21600
           resources:
             requests:
-              cpu: 200m
-              memory: 200Mi
+              cpu: 60m
+              memory: 60Mi
             limits:
-              cpu: 1000m
-              memory: 1000Mi
+              cpu: 600m
+              memory: 512Mi
           rollingParams:
             intervalSeconds: 1
             maxSurge: 25%
@@ -589,11 +593,11 @@
                   timeoutSeconds: 15
                 resources:
                   requests:
-                    cpu: 250m
-                    memory: 200Mi
+                    cpu: 60m
+                    memory: 60Mi
                   limits:
-                    cpu: 1000
-                    memory: 800Mi
+                    cpu: 600m
+                    memory: 512Mi
                 ports:
                   - containerPort: 9000
                     protocol: TCP
@@ -691,7 +695,7 @@
         source:
           contextDir: kafka-manager
           git:
-            ref: production
+            ref: develop
             uri: 'https://github.com/mvilche/apache-kafka-openshift.git'
           type: Git
         strategy:
