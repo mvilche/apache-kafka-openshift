@@ -377,7 +377,7 @@
                   - bash
                   - "-c"
                   - |
-                    timeout -t 30 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
+                    JMX_PORT= /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
                     if [[ $? -eq 0 ]]; then
                     echo -e "\033[32mKafka server is running, :-)\033[0m"
                     exit 0
