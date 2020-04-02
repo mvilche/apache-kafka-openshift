@@ -54,6 +54,21 @@ oc new-app -f apache-kafka-openshift-template.yaml \
 ```
 ------------------------------------------------
 
+### Openshift Install without monitoring tools
+
+  
+
+```console
+
+oc new-app -f apache-kafka-no-monitoring-openshift-template.yaml \
+
+-p NAMESPACE=${PROJECT_NAME} \
+
+-n ${PROJECT_NAME}
+
+```
+------------------------------------------------
+
 ### Adminsitración Apache Kafka
 
   
