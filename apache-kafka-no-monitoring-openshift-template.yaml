@@ -2,12 +2,12 @@
     apiVersion: v1
     kind: Template
     metadata:
-      name: kafka-zookeeper-openshift-mvilche
+      name: kafka-zookeeper-openshift-no-monitoring-mvilche
       labels:
-        template: kafka-zookeeper-openshift-mvilche
+        template: kafka-zookeeper-openshift-no-monitoring-mvilche
         autor: "Martin_Fabrizzio_Vilche"
       annotations:
-        openshift.io/display-name: "kafka-zookeeper-openshift-mvilche"
+        openshift.io/display-name: "kafka-zookeeper-openshift-no-monitoring-mvilche"
         iconClass: "icon-github"
         description: >-
           APACHE KAFKA + ZOOKEEPER + KAFKA MANAGER WEB
@@ -128,7 +128,9 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: JVMFLAGS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
               name: zookeeper
               image: "zookeeper:3.6.0"
               imagePullPolicy: Always
@@ -269,7 +271,11 @@
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: KAFKA_HEAP_OPTS
-                  value: -Dlogging.level=INFO -Djava.awt.headless=true -XX:MaxRAMFraction=1 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JAVA_OPTS
+                  value: -Dlogging.level=INFO -XX:+PrintFlagsFinal -Djava.awt.headless=true -XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0 -Dfile.encoding=UTF8 -XX:+ExitOnOutOfMemoryError -Djava.net.preferIPv4Stack=true
+                - name: JMX_PORT
+                  value: '9999'
               name: kafka
               image: "kafka:2.4.1"
               imagePullPolicy: Always
@@ -371,7 +377,7 @@
                   - bash
                   - "-c"
                   - |
-                    timeout -t 30 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
+                    JMX_PORT= /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1
                     if [[ $? -eq 0 ]]; then
                     echo -e "\033[32mKafka server is running, :-)\033[0m"
                     exit 0

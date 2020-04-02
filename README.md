@@ -1,4 +1,4 @@
-## Openshift Apache Kafka 2.3.1 + Zookeeper Cluster 3.5.6 + Apache Kafka Manager Dashboard 2.0.0.2
+## Openshift Apache Kafka 2.4.1 + Zookeeper Cluster 3.6.0 + Apache Kafka Manager Dashboard 2.0.0.2
 
   
 ![Kafka Manager](/images/manager.png)
