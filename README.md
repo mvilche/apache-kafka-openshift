@@ -235,4 +235,4 @@ oc scale statefulset zookeeper --replicas=5
 
 #### License
 
-##### Martin Fabrizzio Vilche - Licenciado por el MIT
+##### Martin Fabrizzio Vilche - Licenciado por el Instituto Tecnológico de Massachusetts (MIT)
